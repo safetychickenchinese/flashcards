@@ -1,0 +1,2046 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="安鸡卡片">
+<meta name="theme-color" content="#1a1208">
+<title>安鸡卡片</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,600;1,400&family=Noto+Sans:wght@400;600&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1208;--ink-light:#3d2e1a;--paper:#f5f0e8;
+  --red:#b83030;--green:#2e7d4f;--gold:#b8860b;
+  --wash:rgba(26,18,8,.06);--border:rgba(26,18,8,.13);
+  --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:'Noto Serif',Georgia,serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 90% 50% at 10% 15%,rgba(190,165,110,.18) 0%,transparent 55%),radial-gradient(ellipse 70% 70% at 88% 85%,rgba(160,135,90,.13) 0%,transparent 55%);pointer-events:none;z-index:0}
+
+/* ── PAGE SYSTEM ── */
+.page{display:none;flex-direction:column;width:100%;max-width:600px;flex:1}
+.page.active{display:flex}
+
+/* ── SHARED HEADER ── */
+.page-header{width:100%;padding-top:calc(var(–safe-top) + .5rem);padding-bottom:0;background:linear-gradient(180deg,rgba(26,18,8,.97),rgba(26,18,8,.9));border-bottom:1px solid rgba(184,134,11,.3);box-shadow:0 2px 18px rgba(0,0,0,.28);position:relative;overflow:hidden;flex-shrink:0}
+.page-header::after{content:’’;position:absolute;bottom:0;left:0;right:0;height:6px;
+background-image:repeating-linear-gradient(90deg,transparent 0px,transparent 3px,rgba(184,134,11,.38) 3px,rgba(184,134,11,.38) 4px,transparent 4px,transparent 7px,rgba(184,134,11,.38) 7px,rgba(184,134,11,.38) 8px,transparent 8px,transparent 12px);
+pointer-events:none}
+/* Title sits at top of header */
+.page-header-title{text-align:center;padding:.55rem 1rem .15rem;font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:1.3rem;letter-spacing:.2em;color:rgba(245,240,232,.92);text-shadow:0 0 14px rgba(184,134,11,.35)}
+/* Home button row below, with clear tap target below the safe area */
+.page-header-nav{padding:.35rem 1rem .8rem}
+.home-btn{background:rgba(184,134,11,.14);border:1px solid rgba(184,134,11,.32);border-radius:20px;color:rgba(245,240,232,.72);padding:.35rem .85rem;font-size:.7rem;letter-spacing:.08em;cursor:pointer;font-family:‘Noto Serif’,serif;transition:all .18s;white-space:nowrap;display:inline-block}
+.home-btn:hover,.home-btn:active{background:rgba(184,134,11,.3);color:#fff}
+
+/* ── PAGE BODY ── */
+.page-body{flex:1;width:100%;padding:.9rem 1rem calc(var(–safe-bot) + 1.2rem);display:flex;flex-direction:column;gap:.9rem;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;z-index:1}
+
+/* ── HOME PAGE ── */
+#page-home{background:#1a1208;align-items:center}
+.home-art{width:100%;max-width:480px;padding-top:calc(var(–safe-top) + 2rem);padding-bottom:.6rem;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
+.home-title{font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:clamp(2.8rem,12vw,4.5rem);letter-spacing:.3em;color:#f5f0e8;text-shadow:0 0 30px rgba(184,134,11,.45),2px 3px 0 rgba(0,0,0,.5);line-height:1;text-align:center}
+.home-divider-wrap{width:100%;display:flex;align-items:center;gap:.8rem;margin:.7rem 0 .5rem}
+.home-divider-wrap::before,.home-divider-wrap::after{content:’’;flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(184,134,11,.35),transparent)}
+.home-divider-icon{color:var(–gold);font-size:1rem;opacity:.6}
+
+/* Home menu - title only, pill shaped */
+.home-menu{width:100%;max-width:360px;display:flex;flex-direction:column;gap:.5rem;padding:0 1.2rem 2rem}
+.menu-btn{width:100%;padding:.9rem 1.8rem;border-radius:50px;border:1px solid rgba(184,134,11,.28);background:rgba(255,255,255,.06);cursor:pointer;font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:1.05rem;letter-spacing:.1em;color:rgba(245,240,232,.88);transition:all .2s;text-align:center;backdrop-filter:blur(4px);-webkit-tap-highlight-color:transparent}
+.menu-btn:hover,.menu-btn:active{background:rgba(184,134,11,.22);border-color:rgba(184,134,11,.6);color:#fff}
+
+/* Home decorative SVG art */
+.home-creature-row{display:flex;align-items:flex-end;justify-content:center;gap:2rem;margin:.4rem 0 .8rem}
+.home-lattice-row{display:flex;gap:.5rem;justify-content:center;opacity:.25;margin:.3rem 0}
+
+/* ── SHARED SECTION ── */
+.section{background:rgba(255,255,255,.55);border:1px solid var(–border);border-left:3px solid rgba(184,134,11,.2);border-radius:10px;padding:1rem;box-shadow:0 2px 12px rgba(0,0,0,.05),inset 0 1px 0 rgba(255,255,255,.85)}
+.section-title{font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(–gold);opacity:.8;margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem}
+.section-title::after{content:’’;flex:1;height:1px;background:linear-gradient(to right,rgba(184,134,11,.2),transparent)}
+
+/* ── BUTTONS ── */
+.btn-add{background:var(–ink);color:var(–paper);border:none;border-radius:6px;padding:.55rem 1.1rem;font-family:‘Noto Serif’,serif;font-size:.85rem;cursor:pointer;letter-spacing:.04em;transition:all .15s;white-space:nowrap}
+.btn-add:hover{background:#2e2010}
+.btn-gold{background:var(–gold);color:#fff;border:none;border-radius:6px;padding:.55rem 1.1rem;font-family:‘Noto Serif’,serif;font-size:.85rem;cursor:pointer}
+.btn-nav{background:rgba(255,255,255,.7);border:1px solid var(–border);border-radius:6px;padding:.5rem .9rem;font-family:‘Noto Serif’,serif;font-size:.85rem;color:var(–ink);cursor:pointer}
+.btn-nav:disabled{opacity:.35;cursor:default}
+.btn-shuffle{background:rgba(255,255,255,.7);border:1px solid var(–border);border-radius:6px;padding:.5rem .9rem;font-family:‘Noto Serif’,serif;font-size:.85rem;color:var(–ink);cursor:pointer}
+.btn-sm{background:rgba(255,255,255,.7);border:1px solid var(–border);border-radius:6px;padding:.3rem .65rem;font-size:.72rem;color:var(–ink-light);cursor:pointer;white-space:nowrap}
+.btn-sm.danger{color:var(–red);border-color:rgba(184,48,48,.25)}
+.btn-del{background:transparent;border:none;color:var(–ink-light);opacity:.35;font-size:.85rem;cursor:pointer;padding:.1rem .3rem;border-radius:4px;line-height:1}
+.btn-edit{background:transparent;border:none;color:var(–ink-light);opacity:.45;font-size:.85rem;cursor:pointer;padding:.1rem .3rem;border-radius:4px}
+.controls{display:flex;gap:.5rem;align-items:center;justify-content:center;flex-wrap:wrap}
+
+/* ── INPUTS ── */
+.field label{display:block;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(–gold);opacity:.8;margin-bottom:.25rem}
+.field input,.field select{width:100%;background:rgba(255,255,255,.75);border:1px solid var(–border);border-radius:6px;padding:.48rem .6rem;font-family:‘Noto Serif’,serif;font-size:.9rem;color:var(–ink);outline:none}
+.field input:focus,.field select:focus{border-color:var(–gold)}
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.input-grid .btn-add{grid-column:span 2}
+.deck-select{flex:1;background:rgba(255,255,255,.75);border:1px solid var(–border);border-radius:6px;padding:.42rem .55rem;font-family:‘Noto Serif SC’,‘Noto Serif’,serif;font-size:.88rem;color:var(–ink);outline:none;-webkit-appearance:none}
+.deck-select:focus{border-color:var(–gold)}
+.bulk-row{margin-top:.8rem;display:flex;gap:.5rem;align-items:flex-start}
+.bulk-row textarea{flex:1;background:rgba(255,255,255,.75);border:1px solid var(–border);border-radius:6px;padding:.5rem .6rem;font-family:monospace;font-size:.77rem;color:var(–ink);resize:vertical;min-height:72px;outline:none}
+.hint{font-size:.63rem;color:var(–ink-light);opacity:.45;margin-top:.28rem}
+.group-new-row{display:flex;gap:.5rem}
+.group-new-row input{flex:1;background:rgba(255,255,255,.75);border:1px solid var(–border);border-radius:6px;padding:.5rem .6rem;font-family:‘Noto Serif’,serif;font-size:.9rem;color:var(–ink);outline:none}
+.group-new-row input:focus{border-color:var(–gold)}
+
+/* ── MODE BUTTONS ── */
+.mode-row{display:flex;border:1px solid var(–border);border-radius:6px;overflow:hidden;background:rgba(255,255,255,.3)}
+.mode-btn{flex:1;padding:.52rem .2rem;font-size:.65rem;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:var(–ink-light);opacity:.5;border-right:1px solid var(–border);transition:all .15s;line-height:1.3}
+.mode-btn:last-child{border-right:none}
+.mode-btn.active{background:rgba(184,48,48,.12);color:var(–red);opacity:1;font-weight:600;border-bottom:2px solid var(–red)}
+
+/* ── FLASHCARD ── */
+.card-area{width:100%;perspective:1200px}
+.card-wrapper{width:100%;position:relative;height:260px}
+.card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .58s cubic-bezier(.4,0,.2,1);cursor:pointer}
+.card.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.6rem 1.8rem;box-shadow:0 6px 28px rgba(0,0,0,.12),0 1px 0 rgba(255,255,255,.8) inset}
+.card-front{background:linear-gradient(155deg,#faf6ee 0%,#ede4cf 100%);border:none}
+.card-back{background:linear-gradient(155deg,#2c1f0f 0%,#170f06 100%);border:none;transform:rotateY(180deg)}
+.card-back .card-pattern{position:absolute;inset:0;border-radius:6px;overflow:hidden;pointer-events:none;
+background-image:linear-gradient(rgba(184,134,11,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(184,134,11,.035) 1px,transparent 1px);
+background-size:20px 20px}
+.card-fret-border{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.card-back .card-fret-border{opacity:.7}
+.card-front .card-fret-border{opacity:.55}
+.card-lattice-corner{display:none}
+.card-label{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:.7rem;opacity:.35}
+.card-front .card-label{color:var(–ink)}
+.card-back .card-label{color:#f5f0e8}
+.f-chinese{font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:clamp(3.2rem,13vw,5.8rem);line-height:1;color:var(–ink);text-shadow:2px 3px 0 rgba(0,0,0,.06)}
+.f-pinyin{font-size:clamp(1.8rem,7vw,3rem);font-family:‘Noto Sans’,‘Noto Serif’,sans-serif;color:var(–red);font-style:italic;margin-top:.4rem;opacity:.92}
+.f-english{font-size:clamp(1.25rem,5vw,2rem);color:#f0e8d8;font-weight:600;text-align:center}
+.f-english-front{font-size:clamp(1.35rem,5.5vw,2.1rem);color:var(–ink);font-weight:600;text-align:center}
+.b-chinese-large{font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:clamp(2.6rem,10vw,4.8rem);color:rgba(245,240,232,.9);line-height:1}
+.b-pinyin-large{font-size:1.65rem;font-family:‘Noto Sans’,‘Noto Serif’,sans-serif;color:rgba(200,80,70,.9);font-style:italic;margin-top:.4rem}
+.b-english{font-size:1.05rem;color:rgba(245,240,232,.55);margin-top:.2rem;text-align:center}
+.flip-hint{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;opacity:.25;position:absolute;bottom:.9rem}
+.card-front .flip-hint{color:var(–ink)}
+.card-back .flip-hint{color:#f5f0e8}
+.empty-card{height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(–border);border-radius:10px;color:var(–ink-light);opacity:.4}
+.ec{font-family:‘Ma Shan Zheng’,serif;font-size:3.5rem;opacity:.3}
+.swipe-hint{text-align:center;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(–ink-light);opacity:.3;margin-top:.3rem}
+.prog{font-size:.75rem;color:var(–ink-light);opacity:.6;letter-spacing:.08em}
+.btn-speak{position:absolute;bottom:44px;right:28px;background:rgba(184,134,11,.18);border:1px solid rgba(184,134,11,.35);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;transition:all .18s;color:var(–gold);z-index:2;-webkit-tap-highlight-color:transparent}
+.btn-speak:hover,.btn-speak:active{background:rgba(184,134,11,.35);transform:scale(1.1)}
+.card-back .btn-speak{background:rgba(184,134,11,.22);border-color:rgba(184,134,11,.45)}
+
+/* ── TEST ── */
+.test-status{text-align:center;font-size:.75rem;color:var(–ink-light);opacity:.55;letter-spacing:.06em;min-height:1.2rem}
+.test-btns{display:flex;gap:.8rem;justify-content:center;margin-top:.5rem}
+.btn-wrong{background:var(–red);color:#fff;border:none;border-radius:8px;padding:.75rem 2rem;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:‘Noto Serif’,serif;min-width:120px;box-shadow:0 3px 12px rgba(184,48,48,.45);letter-spacing:.04em;transition:filter .1s,transform .1s}
+.btn-wrong:active{filter:brightness(1.2);transform:scale(.97)}
+.btn-correct{background:var(–green);color:#fff;border:none;border-radius:8px;padding:.75rem 2rem;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:‘Noto Serif’,serif;min-width:120px;box-shadow:0 3px 12px rgba(46,125,79,.45);letter-spacing:.04em;transition:filter .1s,transform .1s}
+.btn-correct:active{filter:brightness(1.2);transform:scale(.97)}
+
+/* ── CELEBRATION ── */
+.celebration-stage{display:flex;flex-direction:column;align-items:center;gap:.6rem;padding:1.2rem .5rem}
+.cel-creatures{display:flex;gap:1.5rem;align-items:flex-end;justify-content:center}
+.cel-message{font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:2.2rem;color:var(–gold);letter-spacing:.15em;text-shadow:0 0 20px rgba(184,134,11,.3)}
+.cel-tiger{animation:cel-bounce 0.6s ease-in-out infinite alternate}
+.cel-dragon{animation:cel-bounce 0.6s ease-in-out infinite alternate-reverse}
+@keyframes cel-bounce{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-10px) rotate(5deg)}}
+.cel-trophy{font-size:3rem;animation:cel-spin 1s ease-in-out infinite alternate}
+@keyframes cel-spin{from{transform:scale(1) rotate(-8deg)}to{transform:scale(1.15) rotate(8deg)}}
+.cel-score{font-size:.85rem;color:var(–ink-light);letter-spacing:.06em;text-align:center;line-height:1.6}
+.cel-confetti{display:flex;gap:1.5rem;justify-content:center;align-items:flex-start;min-height:5rem;position:relative;overflow:visible}
+/* Firecracker */
+.fc-cracker{width:22px;height:14px;border-radius:3px;position:relative;display:flex;align-items:center;justify-content:center;margin:1px 0;box-shadow:1px 0 3px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.2)}
+.fc-cracker::before{content:’’;position:absolute;left:-4px;top:50%;transform:translateY(-50%);width:5px;height:2px;background:#8B4513;border-radius:1px}
+.fc-cracker::after{content:’’;position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:5px;height:2px;background:#8B4513;border-radius:1px}
+.fc-cracker.bang{animation:fc-bang .15s ease-out forwards}
+@keyframes fc-bang{0%{transform:scale(1);opacity:1}40%{transform:scale(1.8);opacity:.9;box-shadow:0 0 8px 4px rgba(255,200,50,.8)}100%{transform:scale(0);opacity:0}}
+.fc-burst{position:absolute;width:28px;height:28px;border-radius:50%;pointer-events:none;opacity:0}
+.fc-burst.pop{animation:fc-burst-pop .35s ease-out forwards}
+@keyframes fc-burst-pop{0%{transform:scale(0);opacity:.9;background:radial-gradient(circle,#fff 10%,#ffcc00 40%,#ff4400 70%,transparent 100%)}50%{transform:scale(1.4);opacity:.6}100%{transform:scale(2);opacity:0}}
+.fc-smoke{position:absolute;width:4px;height:4px;border-radius:50%;background:rgba(200,200,200,.6);pointer-events:none;opacity:0}
+.fc-smoke.puff{animation:fc-puff .8s ease-out forwards}
+@keyframes fc-puff{0%{transform:translate(0,0) scale(1);opacity:.7}100%{transform:translate(var(–dx),var(–dy)) scale(2.5);opacity:0}}
+@keyframes cel-droop{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(5px) rotate(2deg)}}
+
+/* ── DUEL ── */
+.duel-prompt{font-size:clamp(1.1rem,5vw,1.6rem);text-align:center;padding:.8rem .5rem;color:var(–ink);font-weight:600;min-height:3rem;line-height:1.4}
+.duel-prompt .dp-char{font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:clamp(3rem,12vw,5rem);line-height:1.1;display:block}
+.duel-choices{display:flex;flex-direction:column;gap:.55rem;margin:.4rem 0}
+.duel-choice{padding:.75rem 1rem;border-radius:8px;border:1.5px solid var(–border);background:rgba(255,255,255,.65);font-family:‘Noto Serif SC’,‘Noto Serif’,serif;font-size:1.1rem;cursor:pointer;text-align:center;transition:all .15s;color:var(–ink)}
+.duel-choice.correct{background:rgba(46,125,79,.15);border-color:#2e7d4f;color:#1a5c33;font-weight:600}
+.duel-choice.wrong{background:rgba(184,48,48,.12);border-color:var(–red);color:var(–red)}
+.duel-feedback{text-align:center;font-size:.85rem;min-height:1.4rem;margin:.2rem 0;font-style:italic;color:var(–ink-light);opacity:.75}
+
+/* ── NUMBERS ── */
+.num-digit-row{display:flex;gap:.4rem;flex-wrap:wrap}
+.num-digit-btn{width:2.6rem;height:2.6rem;border-radius:8px;border:1px solid var(–border);background:rgba(255,255,255,.6);color:var(–ink);font-family:‘Noto Serif’,serif;font-size:1rem;font-weight:600;cursor:pointer;transition:all .15s}
+.num-digit-btn.active{background:rgba(184,134,11,.15);color:var(–ink);border-color:var(–gold);font-weight:700}
+.num-speed-row{display:flex;align-items:center;gap:.8rem;margin-bottom:.4rem}
+.num-speed-label{font-size:.7rem;color:var(–ink-light);opacity:.6;white-space:nowrap}
+.num-slider{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:linear-gradient(to right,rgba(184,134,11,.35),rgba(184,134,11,.15));outline:none;cursor:pointer}
+.num-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:32px;height:32px;border-radius:50%;cursor:pointer;
+background:radial-gradient(circle at 50% 50%,transparent 22%,rgba(184,134,11,.9) 22%,rgba(184,134,11,.9) 28%,#c8960c 28%,#b8860b 42%,#9a700a 42%,#b8860b 55%,#d4a017 55%,#b8860b 65%,rgba(150,110,10,.8) 65%,rgba(150,110,10,.8) 72%,transparent 72%),radial-gradient(circle,#d4a017 0%,#b8860b 40%,#8a6508 70%,#6b4e05 100%);
+box-shadow:0 2px 8px rgba(0,0,0,.3);border:1.5px solid rgba(150,100,5,.6)}
+.num-slider::-moz-range-thumb{width:32px;height:32px;border-radius:50%;cursor:pointer;border:1.5px solid rgba(150,100,5,.6);background:radial-gradient(circle,#d4a017 0%,#b8860b 40%,#8a6508 70%,#6b4e05 100%)}
+.num-speed-desc{font-size:.72rem;color:var(–gold);opacity:.8;text-align:center;letter-spacing:.06em}
+.num-display-section{text-align:center;padding:1.5rem 1rem}
+.num-display{font-family:‘Noto Serif’,Georgia,serif;font-size:clamp(2.5rem,14vw,5rem);line-height:1;color:var(–ink);letter-spacing:.06em;min-height:1.2em;transition:opacity .12s;font-weight:600}
+.num-display.flash{opacity:0}
+.num-chinese{font-family:‘Noto Serif SC’,serif;font-size:1.3rem;color:var(–ink-light);margin-top:.6rem;min-height:1.6em;opacity:.75;letter-spacing:.12em}
+.num-ref-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.3rem}
+.num-ref-row{display:flex;flex-direction:column;align-items:center;padding:.35rem .2rem;border-radius:6px;background:var(–wash)}
+.num-ref-n{font-size:.78rem;color:var(–ink-light);opacity:.6}
+.num-ref-zh{font-family:‘Noto Serif SC’,serif;font-size:.88rem;color:var(–ink);margin-top:.1rem}
+
+/* ── PINYIN ── */
+/* (display handled inline) */
+
+/* ── WORD LIST ── */
+.list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;gap:.4rem;flex-wrap:wrap}
+.list-header h2{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(–ink-light);opacity:.65}
+.filter-sel{background:rgba(255,255,255,.75);border:1px solid var(–border);border-radius:6px;padding:.3rem .5rem;font-size:.75rem;color:var(–ink-light);outline:none;cursor:pointer}
+.word-items{display:flex;flex-direction:column;gap:.25rem}
+.word-item{display:grid;grid-template-columns:1.3rem 2.2rem 1fr 1fr auto auto auto;gap:.3rem;align-items:center;padding:.4rem .2rem;border-radius:6px;font-size:.82rem;transition:background .12s}
+.wi-char{font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:1rem;color:var(–ink)}
+.wi-pinyin{font-family:‘Noto Sans’,‘Noto Serif’,sans-serif;color:var(–red);font-size:.82rem;font-style:italic}
+.wi-en{color:var(–ink-light);font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wi-group{font-size:.68rem;color:var(–ink-light);opacity:.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.word-item.selectable{cursor:pointer}
+.word-item .wi-check{width:1.3rem;height:1.3rem;border-radius:4px;border:1.5px solid var(–border);background:rgba(255,255,255,.7);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.75rem;transition:all .15s}
+.word-item.selected .wi-check{background:var(–ink);border-color:var(–ink);color:var(–paper)}
+.word-item.selected{background:rgba(184,134,11,.08)}
+#bulk-assign-bar{display:none}
+#bulk-assign-bar.visible{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.6rem}
+
+/* ── GROUP PANEL ── */
+.group-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(–border)}
+.group-item:last-child{border-bottom:none}
+.gi-name{font-size:.88rem;color:var(–ink);font-weight:600;margin-right:.4rem}
+.gi-count{font-size:.7rem;color:var(–ink-light);opacity:.5}
+.gi-actions{display:flex;gap:.35rem}
+
+/* ── GROUP EDITOR ── */
+.editor-filter-row{display:flex;gap:.4rem;margin-bottom:.6rem;flex-wrap:wrap}
+.editor-filter-btn{padding:.25rem .7rem;border-radius:16px;font-size:.68rem;border:1px solid var(–border);background:rgba(255,255,255,.5);color:var(–ink-light);cursor:pointer;transition:all .15s}
+.editor-filter-btn.active{background:var(–gold);color:#fff;border-color:var(–gold)}
+.gew-words-list{display:flex;flex-direction:column;gap:.3rem;max-height:55vh;overflow-y:auto}
+.group-editor-word{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.35rem .2rem;border-bottom:1px solid var(–border)}
+.gew-left{display:flex;align-items:center;gap:.5rem;flex:1;min-width:0}
+.gew-char{font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:1.1rem;flex-shrink:0}
+.gew-info{display:flex;flex-direction:column;min-width:0}
+.gew-en{font-size:.78rem;color:var(–ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gew-py{font-family:‘Noto Sans’,sans-serif;font-size:.7rem;color:var(–red);font-style:italic;opacity:.7}
+.gew-toggle{padding:.25rem .6rem;border-radius:14px;font-size:.68rem;border:1px solid var(–border);background:rgba(255,255,255,.5);color:var(–ink-light);cursor:pointer;white-space:nowrap;transition:all .15s}
+.gew-toggle.in-group{background:rgba(46,125,79,.12);color:var(–green);border-color:var(–green)}
+
+/* ── MODALS ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(26,18,8,.6);backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:1.2rem}
+.modal-overlay.open{display:flex}
+.modal{background:#faf6ee;border-radius:14px;width:100%;max-width:420px;box-shadow:0 12px 48px rgba(0,0,0,.3);border:1px solid rgba(184,134,11,.25);overflow:hidden;max-height:90vh;display:flex;flex-direction:column}
+.modal-header{background:var(–ink);color:var(–paper);padding:.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-header h3{font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.modal-close{background:transparent;color:rgba(245,240,232,.6);font-size:1.2rem;padding:0 .3rem;border:none;cursor:pointer}
+.modal-body{padding:1.1rem;display:flex;flex-direction:column;gap:.7rem;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-field label{display:block;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(–gold);opacity:.8;margin-bottom:.25rem}
+.modal-field input{width:100%;background:rgba(255,255,255,.75);border:1px solid var(–border);border-radius:6px;padding:.48rem .6rem;font-family:‘Noto Serif’,serif;font-size:.9rem;color:var(–ink);outline:none}
+.modal-field .tag-checkboxes{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.15rem}
+.tag-cb{display:flex;align-items:center;gap:.3rem;padding:.28rem .65rem;border-radius:16px;border:1px solid var(–border);background:rgba(255,255,255,.6);cursor:pointer;font-size:.72rem;color:var(–ink-light);transition:all .15s;user-select:none}
+.tag-cb.checked{background:var(–ink);color:var(–paper);border-color:var(–ink)}
+.modal-footer{padding:.8rem 1.1rem 1rem;display:flex;gap:.6rem;justify-content:flex-end;border-top:1px solid var(–border);flex-shrink:0}
+.btn-cancel{background:transparent;border:1px solid var(–border);color:var(–ink-light);padding:.5rem 1.1rem;border-radius:6px;font-size:.85rem;cursor:pointer}
+.btn-save{background:var(–ink);color:var(–paper);padding:.5rem 1.3rem;border-radius:6px;font-size:.85rem;cursor:pointer}
+
+/* ── WORD DISPLAY TABLE ── */
+.wdl-table{width:100%;border-collapse:collapse}
+.wdl-table th{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(–gold);opacity:.75;padding:.3rem .4rem;border-bottom:1px solid rgba(184,134,11,.2);text-align:left;font-weight:600}
+.wdl-table td{padding:.38rem .4rem;font-size:.88rem;border-bottom:1px solid rgba(26,18,8,.06);vertical-align:middle}
+.wdl-table tr:last-child td{border-bottom:none}
+.wdl-char{font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:1.15rem;color:var(–ink)}
+.wdl-py{font-family:‘Noto Sans’,‘Noto Serif’,sans-serif;font-size:.78rem;color:var(–red);font-style:italic}
+.wdl-en{font-size:.78rem;color:var(–ink-light)}
+.wdl-remove{background:none;border:none;color:var(–ink-light);opacity:.3;font-size:.9rem;cursor:pointer;padding:.1rem .3rem;border-radius:4px;transition:all .15s;line-height:1}
+.wdl-remove:hover{opacity:.8;color:var(–red)}
+
+/* ── CHUNK MODE ── */
+.chunk-card{border-radius:8px;border:1.5px solid var(–border);background:linear-gradient(155deg,#faf6ee,#ede4cf);min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .4rem;position:relative;cursor:pointer;transition:all .2s;user-select:none;-webkit-tap-highlight-color:transparent;overflow:hidden}
+.chunk-card.flipped{background:linear-gradient(155deg,#2c1f0f,#170f06)}
+.chunk-front{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%}
+.chunk-back{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%}
+.chunk-card.flipped .chunk-front{display:none}
+.chunk-card.flipped .chunk-back{display:flex}
+.chunk-zh{font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:1.6rem;line-height:1.1;color:var(–ink)}
+.chunk-py{font-family:‘Noto Sans’,sans-serif;font-size:.7rem;color:var(–red);font-style:italic;margin-top:.15rem;text-align:center}
+.chunk-en{font-size:.72rem;color:#f0e8d8;text-align:center;line-height:1.3;padding:0 .2rem}
+.chunk-en-front{font-size:.75rem;color:var(–ink);text-align:center;line-height:1.3;font-weight:600}
+.chunk-bk-zh{font-family:‘Ma Shan Zheng’,‘Noto Serif SC’,serif;font-size:1.3rem;color:rgba(245,240,232,.9);line-height:1.1}
+.chunk-bk-py{font-family:‘Noto Sans’,sans-serif;font-size:1rem;color:rgba(200,80,70,.9);font-style:italic;margin-top:.2rem;text-align:center;letter-spacing:.03em}
+.chunk-tap-hint{font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;opacity:.25;margin-top:.3rem;color:var(–ink)}
+.chunk-card.flipped .chunk-tap-hint{color:#f5f0e8}
+@media(max-width:520px){
+.page-body{padding:.8rem .8rem calc(var(–safe-bot) + 1.2rem);gap:.8rem}
+.input-grid{grid-template-columns:1fr 1fr}
+.input-grid .btn-add{grid-column:span 2}
+.word-item{grid-template-columns:1.3rem 1.8rem 1fr 1fr auto auto}
+.wi-group{display:none}
+.card-wrapper{height:240px}
+}
+</style>
+
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     HOME PAGE
+═══════════════════════════════════════════════ -->
+
+<div class="page active" id="page-home" style="align-items:center">
+  <div class="home-art" style="width:100%;display:flex;flex-direction:column;align-items:center">
+
+```
+<!-- Great Wall SVG scene with four towers -->
+<div style="width:100%;background:linear-gradient(180deg,#0d0a05 0%,#1a1208 60%,#1a1208 100%);padding-top:calc(var(--safe-top) + 0px);position:relative;overflow:hidden">
+  <svg viewBox="0 0 400 220" width="100%" style="display:block" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Sky gradient -->
+    <defs>
+      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#0d0a05"/>
+        <stop offset="100%" stop-color="#1a1208"/>
+      </linearGradient>
+      <linearGradient id="moonGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+        <stop offset="0%" stop-color="rgba(245,220,130,.18)"/>
+        <stop offset="100%" stop-color="rgba(245,220,130,0)"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Sky fill -->
+    <rect width="400" height="220" fill="url(#skyGrad)"/>
+
+    <!-- Moon -->
+    <circle cx="340" cy="32" r="18" fill="rgba(245,230,160,.12)"/>
+    <circle cx="340" cy="32" r="12" fill="rgba(245,230,160,.18)"/>
+    <circle cx="340" cy="32" r="7" fill="rgba(245,230,160,.28)"/>
+
+    <!-- Stars -->
+    <circle cx="20" cy="18" r="1" fill="rgba(245,240,200,.4)"/>
+    <circle cx="55" cy="10" r=".8" fill="rgba(245,240,200,.35)"/>
+    <circle cx="90" cy="22" r="1" fill="rgba(245,240,200,.3)"/>
+    <circle cx="130" cy="8" r=".8" fill="rgba(245,240,200,.4)"/>
+    <circle cx="175" cy="15" r="1" fill="rgba(245,240,200,.3)"/>
+    <circle cx="210" cy="6" r=".8" fill="rgba(245,240,200,.35)"/>
+    <circle cx="260" cy="20" r="1" fill="rgba(245,240,200,.25)"/>
+    <circle cx="295" cy="12" r=".8" fill="rgba(245,240,200,.3)"/>
+    <circle cx="375" cy="18" r="1" fill="rgba(245,240,200,.35)"/>
+    <circle cx="38" cy="35" r=".6" fill="rgba(245,240,200,.25)"/>
+    <circle cx="155" cy="28" r=".6" fill="rgba(245,240,200,.2)"/>
+    <circle cx="315" cy="35" r=".6" fill="rgba(245,240,200,.2)"/>
+
+    <!-- Large title characters floating above each tower -->
+    <!-- 安 above tower 1 (translate 14,108 → centre x=28, tower top ~y=108+16=124) -->
+    <text x="28" y="100" font-family="Ma Shan Zheng, Noto Serif SC, serif" font-size="30"
+          fill="rgba(255,255,255,.92)" text-anchor="middle" dominant-baseline="auto"
+          filter="drop-shadow(0 1px 6px rgba(184,134,11,.5))">安</text>
+    <!-- 鸡 above tower 2 (translate 162,88 → centre x=177, tower top ~y=88+15=103) -->
+    <text x="177" y="80" font-family="Ma Shan Zheng, Noto Serif SC, serif" font-size="30"
+          fill="rgba(255,255,255,.92)" text-anchor="middle" dominant-baseline="auto"
+          filter="drop-shadow(0 1px 6px rgba(184,134,11,.5))">鸡</text>
+    <!-- 卡 above tower 3 (translate 316,78 → centre x=331, tower top ~y=78+15=93) -->
+    <text x="331" y="70" font-family="Ma Shan Zheng, Noto Serif SC, serif" font-size="30"
+          fill="rgba(255,255,255,.92)" text-anchor="middle" dominant-baseline="auto"
+          filter="drop-shadow(0 1px 6px rgba(184,134,11,.5))">卡</text>
+    <!-- Far mountain range (darkest, most distant) -->
+    <path d="M0,150 Q30,110 60,130 Q80,105 105,125 Q130,95 160,120 Q180,90 210,115 Q235,85 265,110 Q290,92 320,108 Q345,80 375,105 Q390,98 400,108 L400,220 L0,220 Z"
+          fill="rgba(26,18,8,.65)"/>
+
+    <!-- Mid mountain range -->
+    <path d="M0,170 Q25,135 50,155 Q70,125 95,145 Q115,120 140,140 Q160,128 185,138 Q205,115 230,135 Q252,120 275,138 Q295,125 318,142 Q338,128 360,145 Q380,135 400,150 L400,220 L0,220 Z"
+          fill="rgba(22,15,6,.8)"/>
+
+    <!-- Wall path -->
+    <path d="M0,178 L30,178 L30,168 L60,168 L60,155 L85,155 L85,148 L110,148 L110,158 L130,158 L130,165 L155,165 L155,158 L175,158 L175,148"
+          stroke="rgba(140,105,40,.55)" stroke-width="1" fill="rgba(100,75,25,.3)"/>
+    <path d="M30,168 L30,178 L85,178 L85,155 L110,155 L110,168 L155,168 L155,165 L175,165 L175,158 L170,158 L170,165 L155,172 L110,172 L110,162 L85,162 L85,178 Z"
+          fill="rgba(80,60,18,.4)" opacity=".6"/>
+
+    <!-- ═══ TOWER 1 — 安 ═══ -->
+    <g transform="translate(14,128)">
+      <rect x="0" y="20" width="28" height="32" fill="rgba(100,75,22,.85)" stroke="rgba(184,134,11,.5)" stroke-width=".8"/>
+      <rect x="0" y="16" width="6" height="8" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="8" y="16" width="6" height="8" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="16" y="16" width="6" height="8" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="24" y="16" width="4" height="8" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="10" y="28" width="8" height="12" rx="4" fill="rgba(26,18,8,.7)" stroke="rgba(184,134,11,.3)" stroke-width=".5"/>
+      <path d="M-4,20 Q14,14 32,20" stroke="rgba(184,134,11,.6)" stroke-width="1.2" fill="none"/>
+    </g>
+
+    <!-- Wall segment 1→2 -->
+    <path d="M42,160 L60,152 L75,148 L90,151 L105,156 L120,160 L135,158 L150,153 L168,148"
+          stroke="rgba(140,105,35,.6)" stroke-width="5" fill="none" stroke-linecap="square"/>
+    <path d="M42,160 L60,152 L75,148 L90,151 L105,156 L120,160 L135,158 L150,153 L168,148"
+          stroke="rgba(184,134,11,.2)" stroke-width="1" fill="none"/>
+    <rect x="55" y="147" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="67" y="142" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="79" y="142" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="92" y="145" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="105" y="149" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="118" y="153" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="131" y="151" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="144" y="146" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="157" y="142" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+
+    <!-- ═══ TOWER 2 — 鸡 ═══ -->
+    <g transform="translate(162,108)">
+      <rect x="0" y="20" width="30" height="36" fill="rgba(100,75,22,.88)" stroke="rgba(184,134,11,.5)" stroke-width=".8"/>
+      <rect x="0" y="15" width="6" height="9" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="8" y="15" width="6" height="9" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="16" y="15" width="6" height="9" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="24" y="15" width="6" height="9" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="11" y="28" width="8" height="14" rx="4" fill="rgba(26,18,8,.7)" stroke="rgba(184,134,11,.3)" stroke-width=".5"/>
+      <path d="M-5,20 Q15,13 35,20" stroke="rgba(184,134,11,.65)" stroke-width="1.3" fill="none"/>
+    </g>
+
+    <!-- Wall segment 2→3 -->
+    <path d="M192,130 L205,136 L218,140 L228,138 L238,134 L248,132 L258,135 L268,139 L278,142 L290,140 L300,135 L312,132 L322,135"
+          stroke="rgba(140,105,35,.6)" stroke-width="5" fill="none" stroke-linecap="square"/>
+    <path d="M192,130 L205,136 L218,140 L228,138 L238,134 L248,132 L258,135 L268,139 L278,142 L290,140 L300,135 L312,132 L322,135"
+          stroke="rgba(184,134,11,.2)" stroke-width="1" fill="none"/>
+    <rect x="200" y="131" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="213" y="135" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="226" y="133" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="239" y="128" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="252" y="127" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="265" y="130" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="278" y="134" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="291" y="132" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="304" y="128" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="317" y="129" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+
+    <!-- ═══ TOWER 3 — 卡 ═══ -->
+    <g transform="translate(316,98)">
+      <rect x="0" y="20" width="30" height="38" fill="rgba(100,75,22,.88)" stroke="rgba(184,134,11,.5)" stroke-width=".8"/>
+      <rect x="0" y="15" width="6" height="9" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="8" y="15" width="6" height="9" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="16" y="15" width="6" height="9" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="24" y="15" width="6" height="9" fill="rgba(100,75,22,.9)" stroke="rgba(184,134,11,.45)" stroke-width=".7"/>
+      <rect x="11" y="28" width="8" height="15" rx="4" fill="rgba(26,18,8,.7)" stroke="rgba(184,134,11,.3)" stroke-width=".5"/>
+      <path d="M-5,20 Q15,12 35,20" stroke="rgba(184,134,11,.65)" stroke-width="1.3" fill="none"/>
+    </g>
+
+    <!-- Wall segment 3→4 -->
+    <path d="M346,120 L356,124 L365,128 L372,132 L380,135 L390,138 L400,140"
+          stroke="rgba(140,105,35,.6)" stroke-width="5" fill="none" stroke-linecap="square"/>
+    <path d="M346,120 L356,124 L365,128 L372,132 L380,135 L390,138 L400,140"
+          stroke="rgba(184,134,11,.2)" stroke-width="1" fill="none"/>
+    <rect x="353" y="119" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="366" y="123" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="379" y="127" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+    <rect x="392" y="132" width="4" height="5" fill="rgba(100,75,22,.8)"/>
+
+    <!-- ═══ TOWER 4 — 片 ═══ -->
+    <g transform="translate(358,138)" opacity=".82">
+      <rect x="0" y="18" width="26" height="32" fill="rgba(100,75,22,.82)" stroke="rgba(184,134,11,.4)" stroke-width=".7"/>
+      <rect x="0" y="14" width="5" height="7" fill="rgba(100,75,22,.85)" stroke="rgba(184,134,11,.4)" stroke-width=".6"/>
+      <rect x="7" y="14" width="5" height="7" fill="rgba(100,75,22,.85)" stroke="rgba(184,134,11,.4)" stroke-width=".6"/>
+      <rect x="14" y="14" width="5" height="7" fill="rgba(100,75,22,.85)" stroke="rgba(184,134,11,.4)" stroke-width=".6"/>
+      <rect x="21" y="14" width="5" height="7" fill="rgba(100,75,22,.85)" stroke="rgba(184,134,11,.4)" stroke-width=".6"/>
+      <rect x="9" y="25" width="8" height="12" rx="4" fill="rgba(26,18,8,.65)" stroke="rgba(184,134,11,.25)" stroke-width=".5"/>
+      <path d="M-4,18 Q13,12 30,18" stroke="rgba(184,134,11,.55)" stroke-width="1.2" fill="none"/>
+    </g>
+
+    <!-- Wall continues off right edge -->
+    <path d="M0,180 L14,178" stroke="rgba(140,105,35,.5)" stroke-width="4" fill="none"/>
+
+    <!-- Foreground ground/fade -->
+    <path d="M0,195 Q100,185 200,190 Q300,185 400,192 L400,220 L0,220 Z" fill="#1a1208"/>
+
+    <!-- Atmospheric haze -->
+    <rect x="0" y="120" width="400" height="30" fill="url(#skyGrad)" opacity=".15"/>
+
+  </svg>
+
+</div>
+
+<!-- Dark body: pagoda with tiger left and dragon right -->
+<div style="width:100%;flex:1;background:#1a1208;display:flex;flex-direction:column;align-items:center;padding:0 0 env(safe-area-inset-bottom,0px);margin-top:-8px">
+
+  <!-- PAGODA MENU — full width, tiger and dragon embedded inside SVG -->
+  <div style="width:100%;max-width:480px;padding:.2rem 0 1.5rem;display:flex;flex-direction:column;align-items:center">
+
+    <svg id="pagoda-menu" viewBox="-70 0 460 500" width="100%" style="overflow:visible;display:block" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+      <!-- Tiger — embedded left of pagoda -->
+      <g transform="translate(-62,120)" opacity=".52">
+        <ellipse cx="28" cy="38" rx="16" ry="11" fill="rgba(184,134,11,.22)" stroke="rgba(245,220,160,.55)" stroke-width=".8"/>
+        <ellipse cx="44" cy="28" rx="11" ry="10" fill="rgba(184,134,11,.25)" stroke="rgba(245,220,160,.6)" stroke-width=".8"/>
+        <polygon points="37,20 40,14 43,20" fill="rgba(245,220,160,.5)"/>
+        <polygon points="45,20 48,14 51,20" fill="rgba(245,220,160,.5)"/>
+        <circle cx="42" cy="26" r="1.6" fill="rgba(245,220,160,.9)"/>
+        <circle cx="42" cy="26" r=".7" fill="rgba(26,18,8,.8)"/>
+        <line x1="55" y1="30" x2="62" y2="28" stroke="rgba(245,220,160,.4)" stroke-width=".6"/>
+        <line x1="55" y1="32" x2="62" y2="33" stroke="rgba(245,220,160,.4)" stroke-width=".6"/>
+        <path d="M14 40 Q8 36 6 28 Q5 22 10 20" stroke="rgba(245,220,160,.45)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <line x1="22" y1="47" x2="20" y2="54" stroke="rgba(245,220,160,.4)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="28" y1="49" x2="27" y2="56" stroke="rgba(245,220,160,.4)" stroke-width="2" stroke-linecap="round"/>
+      </g>
+
+      <!-- Dragon — embedded right of pagoda -->
+      <g transform="translate(306,110)" opacity=".52">
+        <path d="M52 10 Q58 18 54 28 Q50 38 42 42 Q34 46 28 42 Q20 38 18 30 Q16 22 22 18 Q28 14 34 18 Q40 22 38 30 Q36 36 30 36" stroke="rgba(184,134,11,.55)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="52" cy="10" rx="7" ry="6" fill="rgba(184,134,11,.28)" stroke="rgba(245,220,160,.6)" stroke-width=".8"/>
+        <circle cx="50" cy="9" r="1.8" fill="rgba(245,220,160,.9)"/>
+        <circle cx="50" cy="9" r=".75" fill="rgba(26,18,8,.85)"/>
+        <path d="M50 5 Q51 1 54 2" stroke="rgba(245,220,160,.55)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path d="M30 36 Q26 40 24 44 Q23 48 26 50" stroke="rgba(184,134,11,.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="8" cy="54" r="4" fill="rgba(184,134,11,.18)" stroke="rgba(245,220,160,.4)" stroke-width=".8"/>
+      </g>
+
+      <!-- SPIRE -->
+      <line x1="160" y1="0" x2="160" y2="20" stroke="rgba(184,134,11,.9)" stroke-width="2.5"/>
+      <polygon points="160,1 153,16 167,16" fill="rgba(184,134,11,.95)" stroke="rgba(245,220,120,.75)" stroke-width="1"/>
+      <circle cx="160" cy="23" r="6" fill="rgba(184,134,11,.9)" stroke="rgba(245,220,120,.8)" stroke-width="1.2"/>
+      <rect x="156" y="26" width="8" height="10" fill="rgba(90,62,15,.95)" stroke="rgba(184,134,11,.5)" stroke-width=".7"/>
+
+      <!-- TIER HEIGHT = 70px each. Body = 42px tall. Roof = 18px tall. Gap = 10px. -->
+      <!-- Tier x-range: body x=96..224 (128px wide). Roof overhang: trapezoid from x=76..244 at base to x=96..224 at top -->
+
+      <!-- ═══ TIER 1 — Test ═══ -->
+      <g class="pagoda-tier" onclick="showPage('test')" style="cursor:pointer">
+        <!-- Sloped roof: trapezoid, wider at bottom, narrower at top, same width as body -->
+        <polygon points="96,36 224,36 234,54 86,54" fill="rgba(105,72,16,.92)" stroke="rgba(184,134,11,.8)" stroke-width="1"/>
+        <!-- Roof ridge cap -->
+        <rect x="106" y="33" width="108" height="6" rx="2" fill="rgba(125,88,20,.95)" stroke="rgba(184,134,11,.85)" stroke-width=".8"/>
+        <!-- Eave shadow -->
+        <rect x="87" y="52" width="146" height="3" fill="rgba(0,0,0,.22)" rx="0"/>
+        <!-- Eave tips (upturned) -->
+        <path d="M86,54 Q78,57 76,53" fill="rgba(105,72,16,.88)" stroke="rgba(184,134,11,.65)" stroke-width=".8"/>
+        <path d="M234,54 Q242,57 244,53" fill="rgba(105,72,16,.88)" stroke="rgba(184,134,11,.65)" stroke-width=".8"/>
+        <!-- Lantern dots along eave -->
+        <circle cx="94"  cy="53" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="113" cy="51" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="134" cy="50" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="160" cy="50" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="186" cy="50" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="207" cy="51" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="226" cy="53" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <!-- Body -->
+        <rect x="96" y="54" width="128" height="42" fill="rgba(70,48,10,.92)" stroke="rgba(184,134,11,.5)" stroke-width=".8"/>
+        <!-- Window arch -->
+        <rect x="138" y="60" width="44" height="30" rx="22" fill="rgba(26,18,8,.55)" stroke="rgba(184,134,11,.3)" stroke-width=".7"/>
+        <!-- Label — plain sans-serif feel via Noto Sans -->
+        <text x="160" y="77" font-family="Noto Sans, Arial, sans-serif" font-size="16" font-weight="600" fill="rgba(245,235,200,.96)" text-anchor="middle" dominant-baseline="middle" letter-spacing="1" pointer-events="none">Test</text>
+        <!-- Invisible hit zone -->
+        <rect x="74" y="30" width="172" height="68" fill="transparent"/>
+      </g>
+
+      <!-- ═══ TIER 2 — Study Flashcards ═══ -->
+      <g class="pagoda-tier" onclick="showPage('study')" style="cursor:pointer">
+        <polygon points="96,106 224,106 234,124 86,124" fill="rgba(105,72,16,.92)" stroke="rgba(184,134,11,.8)" stroke-width="1"/>
+        <rect x="106" y="103" width="108" height="6" rx="2" fill="rgba(125,88,20,.95)" stroke="rgba(184,134,11,.85)" stroke-width=".8"/>
+        <rect x="87" y="122" width="146" height="3" fill="rgba(0,0,0,.22)"/>
+        <path d="M86,124 Q78,127 76,123" fill="rgba(105,72,16,.88)" stroke="rgba(184,134,11,.65)" stroke-width=".8"/>
+        <path d="M234,124 Q242,127 244,123" fill="rgba(105,72,16,.88)" stroke="rgba(184,134,11,.65)" stroke-width=".8"/>
+        <circle cx="94"  cy="123" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="113" cy="121" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="134" cy="120" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="160" cy="120" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="186" cy="120" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="207" cy="121" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="226" cy="123" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <rect x="96" y="124" width="128" height="42" fill="rgba(70,48,10,.92)" stroke="rgba(184,134,11,.5)" stroke-width=".8"/>
+        <rect x="138" y="130" width="44" height="30" rx="22" fill="rgba(26,18,8,.55)" stroke="rgba(184,134,11,.3)" stroke-width=".7"/>
+        <text x="160" y="147" font-family="Noto Sans, Arial, sans-serif" font-size="14" font-weight="600" fill="rgba(245,235,200,.96)" text-anchor="middle" dominant-baseline="middle" letter-spacing=".5" pointer-events="none">Study Flashcards</text>
+        <rect x="74" y="100" width="172" height="68" fill="transparent"/>
+      </g>
+
+      <!-- ═══ TIER 3 — Display Vocab ═══ -->
+      <g class="pagoda-tier" onclick="showPage('display')" style="cursor:pointer">
+        <!-- Lanterns hanging from this roof -->
+        <line x1="88" y1="196" x2="88" y2="207" stroke="rgba(184,134,11,.6)" stroke-width=".9"/>
+        <ellipse cx="88" cy="215" rx="5.5" ry="8" fill="rgba(184,48,48,.75)" stroke="rgba(200,80,50,.5)" stroke-width=".7"/>
+        <line x1="84" y1="210" x2="92" y2="210" stroke="rgba(255,180,50,.28)" stroke-width=".6"/>
+        <line x1="84" y1="215" x2="92" y2="215" stroke="rgba(255,180,50,.28)" stroke-width=".6"/>
+        <line x1="84" y1="220" x2="92" y2="220" stroke="rgba(255,180,50,.28)" stroke-width=".6"/>
+        <line x1="86" y1="222" x2="86" y2="228" stroke="rgba(184,134,11,.4)" stroke-width=".7"/>
+        <line x1="88" y1="222" x2="88" y2="228" stroke="rgba(184,134,11,.4)" stroke-width=".7"/>
+        <line x1="90" y1="222" x2="90" y2="228" stroke="rgba(184,134,11,.4)" stroke-width=".7"/>
+        <line x1="232" y1="196" x2="232" y2="207" stroke="rgba(184,134,11,.6)" stroke-width=".9"/>
+        <ellipse cx="232" cy="215" rx="5.5" ry="8" fill="rgba(184,48,48,.75)" stroke="rgba(200,80,50,.5)" stroke-width=".7"/>
+        <line x1="228" y1="210" x2="236" y2="210" stroke="rgba(255,180,50,.28)" stroke-width=".6"/>
+        <line x1="228" y1="215" x2="236" y2="215" stroke="rgba(255,180,50,.28)" stroke-width=".6"/>
+        <line x1="228" y1="220" x2="236" y2="220" stroke="rgba(255,180,50,.28)" stroke-width=".6"/>
+        <line x1="230" y1="222" x2="230" y2="228" stroke="rgba(184,134,11,.4)" stroke-width=".7"/>
+        <line x1="232" y1="222" x2="232" y2="228" stroke="rgba(184,134,11,.4)" stroke-width=".7"/>
+        <line x1="234" y1="222" x2="234" y2="228" stroke="rgba(184,134,11,.4)" stroke-width=".7"/>
+        <polygon points="96,176 224,176 234,194 86,194" fill="rgba(105,72,16,.92)" stroke="rgba(184,134,11,.8)" stroke-width="1"/>
+        <rect x="106" y="173" width="108" height="6" rx="2" fill="rgba(125,88,20,.95)" stroke="rgba(184,134,11,.85)" stroke-width=".8"/>
+        <rect x="87" y="192" width="146" height="3" fill="rgba(0,0,0,.22)"/>
+        <path d="M86,194 Q78,197 76,193" fill="rgba(105,72,16,.88)" stroke="rgba(184,134,11,.65)" stroke-width=".8"/>
+        <path d="M234,194 Q242,197 244,193" fill="rgba(105,72,16,.88)" stroke="rgba(184,134,11,.65)" stroke-width=".8"/>
+        <circle cx="94"  cy="193" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="113" cy="191" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="134" cy="190" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="160" cy="190" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="186" cy="190" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="207" cy="191" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="226" cy="193" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <rect x="96" y="194" width="128" height="42" fill="rgba(70,48,10,.92)" stroke="rgba(184,134,11,.5)" stroke-width=".8"/>
+        <rect x="138" y="200" width="44" height="30" rx="22" fill="rgba(26,18,8,.55)" stroke="rgba(184,134,11,.3)" stroke-width=".7"/>
+        <text x="160" y="217" font-family="Noto Sans, Arial, sans-serif" font-size="14" font-weight="600" fill="rgba(245,235,200,.96)" text-anchor="middle" dominant-baseline="middle" letter-spacing=".5" pointer-events="none">Display Vocab</text>
+        <rect x="74" y="170" width="172" height="68" fill="transparent"/>
+      </g>
+
+      <!-- ═══ TIER 4 — Generator ═══ -->
+      <g class="pagoda-tier" onclick="showPage('generator')" style="cursor:pointer">
+        <polygon points="96,246 224,246 234,264 86,264" fill="rgba(105,72,16,.92)" stroke="rgba(184,134,11,.8)" stroke-width="1"/>
+        <rect x="106" y="243" width="108" height="6" rx="2" fill="rgba(125,88,20,.95)" stroke="rgba(184,134,11,.85)" stroke-width=".8"/>
+        <rect x="87" y="262" width="146" height="3" fill="rgba(0,0,0,.22)"/>
+        <path d="M86,264 Q78,267 76,263" fill="rgba(105,72,16,.88)" stroke="rgba(184,134,11,.65)" stroke-width=".8"/>
+        <path d="M234,264 Q242,267 244,263" fill="rgba(105,72,16,.88)" stroke="rgba(184,134,11,.65)" stroke-width=".8"/>
+        <circle cx="94"  cy="263" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="113" cy="261" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="134" cy="260" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="160" cy="260" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="186" cy="260" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="207" cy="261" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="226" cy="263" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <rect x="96" y="264" width="128" height="42" fill="rgba(70,48,10,.92)" stroke="rgba(184,134,11,.5)" stroke-width=".8"/>
+        <rect x="138" y="270" width="44" height="30" rx="22" fill="rgba(26,18,8,.55)" stroke="rgba(184,134,11,.3)" stroke-width=".7"/>
+        <text x="160" y="287" font-family="Noto Sans, Arial, sans-serif" font-size="16" font-weight="600" fill="rgba(245,235,200,.96)" text-anchor="middle" dominant-baseline="middle" letter-spacing="1" pointer-events="none">Generator</text>
+        <rect x="74" y="240" width="172" height="68" fill="transparent"/>
+      </g>
+
+      <!-- ═══ TIER 5 — Add Vocab ═══ -->
+      <g class="pagoda-tier" onclick="showPage('vocab')" style="cursor:pointer">
+        <polygon points="96,316 224,316 234,334 86,334" fill="rgba(105,72,16,.92)" stroke="rgba(184,134,11,.8)" stroke-width="1"/>
+        <rect x="106" y="313" width="108" height="6" rx="2" fill="rgba(125,88,20,.95)" stroke="rgba(184,134,11,.85)" stroke-width=".8"/>
+        <rect x="87" y="332" width="146" height="3" fill="rgba(0,0,0,.22)"/>
+        <path d="M86,334 Q78,337 76,333" fill="rgba(105,72,16,.88)" stroke="rgba(184,134,11,.65)" stroke-width=".8"/>
+        <path d="M234,334 Q242,337 244,333" fill="rgba(105,72,16,.88)" stroke="rgba(184,134,11,.65)" stroke-width=".8"/>
+        <circle cx="94"  cy="333" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="113" cy="331" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="134" cy="330" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="160" cy="330" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="186" cy="330" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="207" cy="331" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <circle cx="226" cy="333" r="2.2" fill="rgba(184,48,48,.88)"/>
+        <rect x="96" y="334" width="128" height="46" fill="rgba(70,48,10,.92)" stroke="rgba(184,134,11,.5)" stroke-width=".8"/>
+        <!-- Gate arch on base tier -->
+        <rect x="138" y="340" width="44" height="36" rx="22" fill="rgba(26,18,8,.58)" stroke="rgba(184,134,11,.3)" stroke-width=".7"/>
+        <text x="160" y="360" font-family="Noto Sans, Arial, sans-serif" font-size="16" font-weight="600" fill="rgba(245,235,200,.96)" text-anchor="middle" dominant-baseline="middle" letter-spacing="1" pointer-events="none">Add Vocab</text>
+        <rect x="74" y="310" width="172" height="72" fill="transparent"/>
+      </g>
+
+      <!-- FOUNDATION STEPS -->
+      <rect x="82"  y="380" width="156" height="9"  rx="2" fill="rgba(90,64,16,.95)"  stroke="rgba(184,134,11,.5)"  stroke-width=".9"/>
+      <rect x="68"  y="389" width="184" height="9"  rx="2" fill="rgba(78,54,12,.97)"  stroke="rgba(184,134,11,.45)" stroke-width=".9"/>
+      <rect x="52"  y="398" width="216" height="10" rx="2" fill="rgba(64,44,10,.99)"  stroke="rgba(184,134,11,.4)"  stroke-width=".9"/>
+      <rect x="34"  y="408" width="252" height="11" rx="2" fill="rgba(52,36,8,1)"     stroke="rgba(184,134,11,.35)" stroke-width=".9"/>
+
+      <!-- FIRECRACKER POLES — upright bamboo poles beside the pagoda, strings hanging from top -->
+      <!-- Left pole — outside foundation at x=10 -->
+      <line x1="10" y1="419" x2="10" y2="260" stroke="rgba(139,100,30,.8)" stroke-width="3.5" stroke-linecap="round"/>
+      <!-- Pole cap -->
+      <circle cx="10" cy="258" r="5" fill="rgba(184,134,11,.85)" stroke="rgba(245,200,80,.7)" stroke-width="1.2"/>
+      <!-- Fuse curling from top -->
+      <path d="M10,253 Q6,246 10,240" stroke="rgba(245,200,50,.8)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <!-- String with crackers hanging down from pole top -->
+      <line x1="10" y1="263" x2="10" y2="400" stroke="rgba(139,69,19,.6)" stroke-width="1.2"/>
+      <rect x="4"  y="268" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="4"  y="281" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="4"  y="294" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="4"  y="307" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="4"  y="320" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="4"  y="333" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="4"  y="346" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="4"  y="359" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="4"  y="372" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+
+      <!-- Right pole — outside foundation at x=310 -->
+      <line x1="310" y1="419" x2="310" y2="260" stroke="rgba(139,100,30,.8)" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="310" cy="258" r="5" fill="rgba(184,134,11,.85)" stroke="rgba(245,200,80,.7)" stroke-width="1.2"/>
+      <path d="M310,253 Q314,246 310,240" stroke="rgba(245,200,50,.8)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <line x1="310" y1="263" x2="310" y2="400" stroke="rgba(139,69,19,.6)" stroke-width="1.2"/>
+      <rect x="304" y="272" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="304" y="285" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="304" y="298" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="304" y="311" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="304" y="324" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="304" y="337" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="304" y="350" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="304" y="363" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+      <rect x="304" y="376" width="12" height="8" rx="2" fill="rgba(184,48,48,.88)" stroke="rgba(220,60,60,.5)" stroke-width=".6"/>
+
+    </svg>
+
+    <style>
+      .pagoda-tier polygon, .pagoda-tier rect:not([fill="transparent"]):not([rx="22"]):not([rx="2"]) { transition: filter .18s }
+      .pagoda-tier:hover polygon { filter: brightness(1.5) }
+      .pagoda-tier:hover rect:not([fill="transparent"]):not([fill="rgba(26,18,8,.55)"]) { filter: brightness(1.4) }
+      .pagoda-tier:hover text { fill: rgba(255,252,210,1) !important }
+      .pagoda-tier:active polygon { filter: brightness(2) }
+    </style>
+
+  </div>
+
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     STUDY PAGE
+═══════════════════════════════════════════════ -->
+
+<div class="page" id="page-study">
+  <div class="page-header">
+    <div class="page-header-title">Study</div>
+    <div class="page-header-nav"><button class="home-btn" onclick="showPage('home')">⌂ Home</button></div>
+  </div>
+  <div class="page-body">
+    <div class="section">
+      <div style="display:flex;gap:.6rem;align-items:center">
+        <div class="section-title" style="margin-bottom:0;white-space:nowrap">Deck</div>
+        <select id="study-deck-select" class="deck-select" onchange="onStudyDeckChange()"></select>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Mode</div>
+      <div class="mode-row">
+        <button class="mode-btn active" id="mode-hz" onclick="setMode('hanzi')">汉字</button>
+        <button class="mode-btn" id="mode-py" onclick="setMode('pinyin')">Pinyin</button>
+        <button class="mode-btn" id="mode-en" onclick="setMode('english')">English</button>
+        <button class="mode-btn" id="mode-chunk" onclick="setMode('chunk')">Chunk</button>
+      </div>
+    </div>
+
+```
+<!-- Standard flashcard area (hidden in chunk mode) -->
+<div id="study-standard">
+  <div class="card-area">
+    <div id="study-empty" class="empty-card"><div class="ec">字</div><p>Add words in Add Vocab</p></div>
+    <div class="card-wrapper" id="study-card-wrapper" style="display:none">
+      <div class="card" id="flash-card" onclick="flipCard()">
+        <div class="card-face card-front">
+          <svg class="card-fret-border" viewBox="0 0 400 260" preserveAspectRatio="none" fill="none"><defs><style>.fb{stroke:#b8860b;stroke-width:1.5;fill:none}</style></defs><rect x="3" y="3" width="394" height="254" rx="5" class="fb" stroke-width="2"/><rect x="11" y="11" width="378" height="238" rx="3" class="fb" stroke-width="1"/><path class="fb" stroke-width="1.2" d="M11,11 L11,25 L19,25 L19,18 L27,18 L27,25 L35,25 L35,11 M35,11 L35,25 L43,25 L43,18 L51,18 L51,25 L59,25 L59,11 M59,11 L59,25 L67,25 L67,18 L75,18 L75,25 L83,25 L83,11 M83,11 L83,25 L91,25 L91,18 L99,18 L99,25 L107,25 L107,11 M107,11 L107,25 L115,25 L115,18 L123,18 L123,25 L131,25 L131,11 M131,11 L131,25 L139,25 L139,18 L147,18 L147,25 L155,25 L155,11 M155,11 L155,25 L163,25 L163,18 L171,18 L171,25 L179,25 L179,11 M179,11 L179,25 L187,25 L187,18 L195,18 L195,25 L203,25 L203,11 M203,11 L203,25 L211,25 L211,18 L219,18 L219,25 L227,25 L227,11 M227,11 L227,25 L235,25 L235,18 L243,18 L243,25 L251,25 L251,11 M251,11 L251,25 L259,25 L259,18 L267,18 L267,25 L275,25 L275,11 M275,11 L275,25 L283,25 L283,18 L291,18 L291,25 L299,25 L299,11 M299,11 L299,25 L307,25 L307,18 L315,18 L315,25 L323,25 L323,11 M323,11 L323,25 L331,25 L331,18 L339,18 L339,25 L347,25 L347,11 M347,11 L347,25 L355,25 L355,18 L363,18 L363,25 L371,25 L371,11 M371,11 L371,25 L379,25 L379,18 L387,18 L387,25 L389,25 L389,11"/><path class="fb" stroke-width="1.2" d="M11,249 L11,235 L19,235 L19,242 L27,242 L27,235 L35,235 L35,249 M35,249 L35,235 L43,235 L43,242 L51,242 L51,235 L59,235 L59,249 M59,249 L59,235 L67,235 L67,242 L75,242 L75,235 L83,235 L83,249 M83,249 L83,235 L91,235 L91,242 L99,242 L99,235 L107,235 L107,249 M107,249 L107,235 L115,235 L115,242 L123,242 L123,235 L131,235 L131,249 M131,249 L131,235 L139,235 L139,242 L147,242 L147,235 L155,235 L155,249 M155,249 L155,235 L163,235 L163,242 L171,242 L171,235 L179,235 L179,249 M179,249 L179,235 L187,235 L187,242 L195,242 L195,235 L203,235 L203,249 M203,249 L203,235 L211,235 L211,242 L219,242 L219,235 L227,235 L227,249 M227,249 L227,235 L235,235 L235,242 L243,242 L243,235 L251,235 L251,249 M251,249 L251,235 L259,235 L259,242 L267,242 L267,235 L275,235 L275,249 M275,249 L275,235 L283,235 L283,242 L291,242 L291,235 L299,235 L299,249 M299,249 L299,235 L307,235 L307,242 L315,242 L315,235 L323,235 L323,249 M323,249 L323,235 L331,235 L331,242 L339,242 L339,235 L347,235 L347,249 M347,249 L347,235 L355,235 L355,242 L363,242 L363,235 L371,235 L371,249 M371,249 L371,235 L379,235 L379,242 L387,242 L387,235 L389,235 L389,249"/><path class="fb" stroke-width="1.2" d="M11,11 L25,11 L25,19 L18,19 L18,27 L25,27 L25,35 L11,35 M11,35 L25,35 L25,43 L18,43 L18,51 L25,51 L25,59 L11,59 M11,59 L25,59 L25,67 L18,67 L18,75 L25,75 L25,83 L11,83 M11,83 L25,83 L25,91 L18,91 L18,99 L25,99 L25,107 L11,107 M11,107 L25,107 L25,115 L18,115 L18,123 L25,123 L25,131 L11,131 M11,131 L25,131 L25,139 L18,139 L18,147 L25,147 L25,155 L11,155 M11,155 L25,155 L25,163 L18,163 L18,171 L25,171 L25,179 L11,179 M11,179 L25,179 L25,187 L18,187 L18,195 L25,195 L25,203 L11,203 M11,203 L25,203 L25,211 L18,211 L18,219 L25,219 L25,227 L11,227 M11,227 L25,227 L25,235 L18,235 L18,243 L25,243 L25,249 L11,249"/><path class="fb" stroke-width="1.2" d="M389,11 L375,11 L375,19 L382,19 L382,27 L375,27 L375,35 L389,35 M389,35 L375,35 L375,43 L382,43 L382,51 L375,51 L375,59 L389,59 M389,59 L375,59 L375,67 L382,67 L382,75 L375,75 L375,83 L389,83 M389,83 L375,83 L375,91 L382,91 L382,99 L375,99 L375,107 L389,107 M389,107 L375,107 L375,115 L382,115 L382,123 L375,123 L375,131 L389,131 M389,131 L375,131 L375,139 L382,139 L382,147 L375,147 L375,155 L389,155 M389,155 L375,155 L375,163 L382,163 L382,171 L375,171 L375,179 L389,179 M389,179 L375,179 L375,187 L382,187 L382,195 L375,195 L375,203 L389,203 M389,203 L375,203 L375,211 L382,211 L382,219 L375,219 L375,227 L389,227 M389,227 L375,227 L375,235 L382,235 L382,243 L375,243 L375,249 L389,249"/></svg>
+          <div class="card-label" id="cf-label">Chinese</div>
+          <div id="cf-main"></div><div id="cf-sub"></div>
+          <div class="flip-hint">tap to reveal</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-pattern"></div>
+          <svg class="card-fret-border" viewBox="0 0 400 260" preserveAspectRatio="none" fill="none"><rect x="3" y="3" width="394" height="254" rx="5" stroke="#b8860b" stroke-width="2"/><rect x="11" y="11" width="378" height="238" rx="3" stroke="#b8860b" stroke-width="1"/><path stroke="#b8860b" stroke-width="1.2" d="M11,11 L11,25 L19,25 L19,18 L27,18 L27,25 L35,25 L35,11 M35,11 L35,25 L43,25 L43,18 L51,18 L51,25 L59,25 L59,11 M59,11 L59,25 L67,25 L67,18 L75,18 L75,25 L83,25 L83,11 M83,11 L83,25 L91,25 L91,18 L99,18 L99,25 L107,25 L107,11 M107,11 L107,25 L115,25 L115,18 L123,18 L123,25 L131,25 L131,11 M131,11 L131,25 L139,25 L139,18 L147,18 L147,25 L155,25 L155,11 M155,11 L155,25 L163,25 L163,18 L171,18 L171,25 L179,25 L179,11 M179,11 L179,25 L187,25 L187,18 L195,18 L195,25 L203,25 L203,11 M203,11 L203,25 L211,25 L211,18 L219,18 L219,25 L227,25 L227,11 M227,11 L227,25 L235,25 L235,18 L243,18 L243,25 L251,25 L251,11 M251,11 L251,25 L259,25 L259,18 L267,18 L267,25 L275,25 L275,11 M275,11 L275,25 L283,25 L283,18 L291,18 L291,25 L299,25 L299,11 M299,11 L299,25 L307,25 L307,18 L315,18 L315,25 L323,25 L323,11 M323,11 L323,25 L331,25 L331,18 L339,18 L339,25 L347,25 L347,11 M347,11 L347,25 L355,25 L355,18 L363,18 L363,25 L371,25 L371,11 M371,11 L371,25 L379,25 L379,18 L387,18 L387,25 L389,25 L389,11"/><path stroke="#b8860b" stroke-width="1.2" d="M11,249 L11,235 L19,235 L19,242 L27,242 L27,235 L35,235 L35,249 M35,249 L35,235 L43,235 L43,242 L51,242 L51,235 L59,235 L59,249 M59,249 L59,235 L67,235 L67,242 L75,242 L75,235 L83,235 L83,249 M83,249 L83,235 L91,235 L91,242 L99,242 L99,235 L107,235 L107,249 M107,249 L107,235 L115,235 L115,242 L123,242 L123,235 L131,235 L131,249 M131,249 L131,235 L139,235 L139,242 L147,242 L147,235 L155,235 L155,249 M155,249 L155,235 L163,235 L163,242 L171,242 L171,235 L179,235 L179,249 M179,249 L179,235 L187,235 L187,242 L195,242 L195,235 L203,235 L203,249 M203,249 L203,235 L211,235 L211,242 L219,242 L219,235 L227,235 L227,249 M227,249 L227,235 L235,235 L235,242 L243,242 L243,235 L251,235 L251,249 M251,249 L251,235 L259,235 L259,242 L267,242 L267,235 L275,235 L275,249 M275,249 L275,235 L283,235 L283,242 L291,242 L291,235 L299,235 L299,249 M299,249 L299,235 L307,235 L307,242 L315,242 L315,235 L323,235 L323,249 M323,249 L323,235 L331,235 L331,242 L339,242 L339,235 L347,235 L347,249 M347,249 L347,235 L355,235 L355,242 L363,242 L363,235 L371,235 L371,249 M371,249 L371,235 L379,235 L379,242 L387,242 L387,235 L389,235 L389,249"/><path stroke="#b8860b" stroke-width="1.2" d="M11,11 L25,11 L25,19 L18,19 L18,27 L25,27 L25,35 L11,35 M11,35 L25,35 L25,43 L18,43 L18,51 L25,51 L25,59 L11,59 M11,59 L25,59 L25,67 L18,67 L18,75 L25,75 L25,83 L11,83 M11,83 L25,83 L25,91 L18,91 L18,99 L25,99 L25,107 L11,107 M11,107 L25,107 L25,115 L18,115 L18,123 L25,123 L25,131 L11,131 M11,131 L25,131 L25,139 L18,139 L18,147 L25,147 L25,155 L11,155 M11,155 L25,155 L25,163 L18,163 L18,171 L25,171 L25,179 L11,179 M11,179 L25,179 L25,187 L18,187 L18,195 L25,195 L25,203 L11,203 M11,203 L25,203 L25,211 L18,211 L18,219 L25,219 L25,227 L11,227 M11,227 L25,227 L25,235 L18,235 L18,243 L25,243 L25,249 L11,249"/><path stroke="#b8860b" stroke-width="1.2" d="M389,11 L375,11 L375,19 L382,19 L382,27 L375,27 L375,35 L389,35 M389,35 L375,35 L375,43 L382,43 L382,51 L375,51 L375,59 L389,59 M389,59 L375,59 L375,67 L382,67 L382,75 L375,75 L375,83 L389,83 M389,83 L375,83 L375,91 L382,91 L382,99 L375,99 L375,107 L389,107 M389,107 L375,107 L375,115 L382,115 L382,123 L375,123 L375,131 L389,131 M389,131 L375,131 L375,139 L382,139 L382,147 L375,147 L375,155 L389,155 M389,155 L375,155 L375,163 L382,163 L382,171 L375,171 L375,179 L389,179 M389,179 L375,179 L375,187 L382,187 L382,195 L375,195 L375,203 L389,203 M389,203 L375,203 L375,211 L382,211 L382,219 L375,219 L375,227 L389,227 M389,227 L375,227 L375,235 L382,235 L382,243 L375,243 L375,249 L389,249"/></svg>
+          <div class="card-label" id="cb-label">Answer</div>
+          <div id="cb-main"></div><div id="cb-sub"></div><div id="cb-sub2"></div>
+          <button class="btn-speak" onclick="event.stopPropagation();speakCurrent()" title="Listen">🔊</button>
+          <div class="flip-hint">tap to flip back</div>
+        </div>
+      </div>
+    </div>
+    <div class="swipe-hint" id="study-swipe-hint" style="display:none">swipe or use buttons</div>
+  </div>
+  <div class="controls" id="study-controls" style="display:none">
+    <button class="btn-nav" id="btn-prev" onclick="navigate(-1)">← Prev</button>
+    <span class="prog" id="prog-text"></span>
+    <button class="btn-nav" id="btn-next" onclick="navigate(1)">Next →</button>
+    <button class="btn-shuffle" onclick="shuffle()">⇌ Shuffle</button>
+  </div>
+</div>
+
+<!-- ── CHUNK MODE ── -->
+<div id="study-chunk" style="display:none">
+  <div class="section">
+    <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.6rem">
+      <div style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light);opacity:.6;white-space:nowrap">Direction</div>
+      <div class="mode-row" style="flex:1">
+        <button class="mode-btn active" id="chunk-dir-hz" onclick="setChunkDir('hanzi')">汉→En</button>
+        <button class="mode-btn" id="chunk-dir-en" onclick="setChunkDir('english')">En→汉</button>
+        <button class="mode-btn" id="chunk-dir-py" onclick="setChunkDir('pinyin')">Pīn→En</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+      <div style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light);opacity:.6;white-space:nowrap">Cards</div>
+      <div class="mode-row" style="flex:1;max-width:220px">
+        <button class="mode-btn" id="chunk-size-6" onclick="setChunkSize(6)">6</button>
+        <button class="mode-btn" id="chunk-size-7" onclick="setChunkSize(7)">7</button>
+        <button class="mode-btn active" id="chunk-size-8" onclick="setChunkSize(8)">8</button>
+        <button class="mode-btn" id="chunk-size-9" onclick="setChunkSize(9)">9</button>
+        <button class="mode-btn" id="chunk-size-10" onclick="setChunkSize(10)">10</button>
+      </div>
+    </div>
+  </div>
+  <div class="section" style="padding:.6rem .7rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;flex-wrap:wrap;gap:.4rem">
+      <span class="prog" id="chunk-prog"></span>
+      <div style="display:flex;gap:.4rem">
+        <button class="btn-sm" onclick="shuffleChunk()">⇌ Shuffle</button>
+        <button class="btn-sm" onclick="nextChunk()">Next chunk →</button>
+      </div>
+    </div>
+    <div id="chunk-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"></div>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     DISPLAY PAGE
+═══════════════════════════════════════════════ -->
+
+<div class="page" id="page-display">
+  <div class="page-header">
+    <div class="page-header-title">Display Vocab</div>
+    <div class="page-header-nav"><button class="home-btn" onclick="showPage('home')">⌂ Home</button></div>
+  </div>
+  <div class="page-body">
+    <div class="section">
+      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+        <select id="wdl-group-select" class="deck-select" onchange="wdlBatchStart=0;renderWordDisplay()"></select>
+        <button class="btn-sm" onclick="resetWordDisplay()" title="Show all hidden words">↺ Reset</button>
+      </div>
+    </div>
+    <div class="section" style="padding:.7rem 1rem">
+      <div id="wdl-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TEST PAGE
+═══════════════════════════════════════════════ -->
+
+<div class="page" id="page-test">
+  <div class="page-header">
+    <div class="page-header-title">Test</div>
+    <div class="page-header-nav"><button class="home-btn" onclick="showPage('home')">⌂ Home</button></div>
+  </div>
+  <div class="page-body">
+    <!-- Flashcard Test -->
+    <div class="section">
+      <div class="section-title">Flashcard Test</div>
+      <div style="display:flex;gap:.6rem;align-items:center;margin-bottom:.75rem">
+        <div style="font-size:.72rem;color:var(--ink-light);opacity:.6;white-space:nowrap">Deck</div>
+        <select id="test-deck-select" class="deck-select" onchange="onTestDeckChange()"></select>
+      </div>
+      <div class="section-title" style="margin-bottom:.5rem">Mode</div>
+      <div class="mode-row" style="margin-bottom:.75rem">
+        <button class="mode-btn active" id="tmode-hz" onclick="setTestMode('hanzi')">汉字</button>
+        <button class="mode-btn" id="tmode-py" onclick="setTestMode('pinyin')">Pinyin</button>
+        <button class="mode-btn" id="tmode-en" onclick="setTestMode('english')">English</button>
+      </div>
+      <div id="test-start-section">
+        <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.4rem">
+          <span class="num-speed-label">Fewer</span>
+          <input type="range" id="test-count-slider" min="1" max="10" value="10" step="1" class="num-slider" oninput="updateTestCountLabel()"/>
+          <span class="num-speed-label">All</span>
+        </div>
+        <div id="test-count-label" style="font-size:.72rem;color:var(--gold);opacity:.8;text-align:center;letter-spacing:.06em;margin-bottom:.9rem">10 cards</div>
+        <div style="text-align:center"><button class="btn-add" onclick="startTest()">Start Test →</button></div>
+      </div>
+    </div>
+
+```
+<!-- Test area -->
+<div id="test-area" style="display:none">
+  <div class="card-area">
+    <div class="card-wrapper" id="test-card-wrapper">
+      <div class="card" id="test-card" onclick="flipTestCard()">
+        <div class="card-face card-front">
+          <svg class="card-fret-border" viewBox="0 0 400 260" preserveAspectRatio="none" fill="none"><defs><style>.fbt{stroke:#b8860b;stroke-width:1.5;fill:none}</style></defs><rect x="3" y="3" width="394" height="254" rx="5" class="fbt" stroke-width="2"/><rect x="11" y="11" width="378" height="238" rx="3" class="fbt" stroke-width="1"/><path class="fbt" stroke-width="1.2" d="M11,11 L11,25 L19,25 L19,18 L27,18 L27,25 L35,25 L35,11 M35,11 L35,25 L43,25 L43,18 L51,18 L51,25 L59,25 L59,11 M59,11 L59,25 L67,25 L67,18 L75,18 L75,25 L83,25 L83,11 M83,11 L83,25 L91,25 L91,18 L99,18 L99,25 L107,25 L107,11 M107,11 L107,25 L115,25 L115,18 L123,18 L123,25 L131,25 L131,11 M131,11 L131,25 L139,25 L139,18 L147,18 L147,25 L155,25 L155,11 M155,11 L155,25 L163,25 L163,18 L171,18 L171,25 L179,25 L179,11 M179,11 L179,25 L187,25 L187,18 L195,18 L195,25 L203,25 L203,11 M203,11 L203,25 L211,25 L211,18 L219,18 L219,25 L227,25 L227,11 M227,11 L227,25 L235,25 L235,18 L243,18 L243,25 L251,25 L251,11 M251,11 L251,25 L259,25 L259,18 L267,18 L267,25 L275,25 L275,11 M275,11 L275,25 L283,25 L283,18 L291,18 L291,25 L299,25 L299,11 M299,11 L299,25 L307,25 L307,18 L315,18 L315,25 L323,25 L323,11 M323,11 L323,25 L331,25 L331,18 L339,18 L339,25 L347,25 L347,11 M347,11 L347,25 L355,25 L355,18 L363,18 L363,25 L371,25 L371,11 M371,11 L371,25 L379,25 L379,18 L387,18 L387,25 L389,25 L389,11"/><path class="fbt" stroke-width="1.2" d="M11,249 L11,235 L19,235 L19,242 L27,242 L27,235 L35,235 L35,249 M35,249 L35,235 L43,235 L43,242 L51,242 L51,235 L59,235 L59,249 M59,249 L59,235 L67,235 L67,242 L75,242 L75,235 L83,235 L83,249 M83,249 L83,235 L91,235 L91,242 L99,242 L99,235 L107,235 L107,249 M107,249 L107,235 L115,235 L115,242 L123,242 L123,235 L131,235 L131,249 M131,249 L131,235 L139,235 L139,242 L147,242 L147,235 L155,235 L155,249 M155,249 L155,235 L163,235 L163,242 L171,242 L171,235 L179,235 L179,249 M179,249 L179,235 L187,235 L187,242 L195,242 L195,235 L203,235 L203,249 M203,249 L203,235 L211,235 L211,242 L219,242 L219,235 L227,235 L227,249 M227,249 L227,235 L235,235 L235,242 L243,242 L243,235 L251,235 L251,249 M251,249 L251,235 L259,235 L259,242 L267,242 L267,235 L275,235 L275,249 M275,249 L275,235 L283,235 L283,242 L291,242 L291,235 L299,235 L299,249 M299,249 L299,235 L307,235 L307,242 L315,242 L315,235 L323,235 L323,249 M323,249 L323,235 L331,235 L331,242 L339,242 L339,235 L347,235 L347,249 M347,249 L347,235 L355,235 L355,242 L363,242 L363,235 L371,235 L371,249 M371,249 L371,235 L379,235 L379,242 L387,242 L387,235 L389,235 L389,249"/><path class="fbt" stroke-width="1.2" d="M11,11 L25,11 L25,19 L18,19 L18,27 L25,27 L25,35 L11,35 M11,35 L25,35 L25,43 L18,43 L18,51 L25,51 L25,59 L11,59 M11,59 L25,59 L25,67 L18,67 L18,75 L25,75 L25,83 L11,83 M11,83 L25,83 L25,91 L18,91 L18,99 L25,99 L25,107 L11,107 M11,107 L25,107 L25,115 L18,115 L18,123 L25,123 L25,131 L11,131 M11,131 L25,131 L25,139 L18,139 L18,147 L25,147 L25,155 L11,155 M11,155 L25,155 L25,163 L18,163 L18,171 L25,171 L25,179 L11,179 M11,179 L25,179 L25,187 L18,187 L18,195 L25,195 L25,203 L11,203 M11,203 L25,203 L25,211 L18,211 L18,219 L25,219 L25,227 L11,227 M11,227 L25,227 L25,235 L18,235 L18,243 L25,243 L25,249 L11,249"/><path class="fbt" stroke-width="1.2" d="M389,11 L375,11 L375,19 L382,19 L382,27 L375,27 L375,35 L389,35 M389,35 L375,35 L375,43 L382,43 L382,51 L375,51 L375,59 L389,59 M389,59 L375,59 L375,67 L382,67 L382,75 L375,75 L375,83 L389,83 M389,83 L375,83 L375,91 L382,91 L382,99 L375,99 L375,107 L389,107 M389,107 L375,107 L375,115 L382,115 L382,123 L375,123 L375,131 L389,131 M389,131 L375,131 L375,139 L382,139 L382,147 L375,147 L375,155 L389,155 M389,155 L375,155 L375,163 L382,163 L382,171 L375,171 L375,179 L389,179 M389,179 L375,179 L375,187 L382,187 L382,195 L375,195 L375,203 L389,203 M389,203 L375,203 L375,211 L382,211 L382,219 L375,219 L375,227 L389,227 M389,227 L375,227 L375,235 L382,235 L382,243 L375,243 L375,249 L389,249"/></svg>
+          <div class="card-label" id="tcf-label">Chinese</div>
+          <div id="tcf-main"></div><div id="tcf-sub"></div>
+          <div class="flip-hint">tap to reveal</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-pattern"></div>
+          <svg class="card-fret-border" viewBox="0 0 400 260" preserveAspectRatio="none" fill="none"><rect x="3" y="3" width="394" height="254" rx="5" stroke="#b8860b" stroke-width="2"/><rect x="11" y="11" width="378" height="238" rx="3" stroke="#b8860b" stroke-width="1"/><path stroke="#b8860b" stroke-width="1.2" d="M11,11 L11,25 L19,25 L19,18 L27,18 L27,25 L35,25 L35,11 M35,11 L35,25 L43,25 L43,18 L51,18 L51,25 L59,25 L59,11 M59,11 L59,25 L67,25 L67,18 L75,18 L75,25 L83,25 L83,11 M83,11 L83,25 L91,25 L91,18 L99,18 L99,25 L107,25 L107,11 M107,11 L107,25 L115,25 L115,18 L123,18 L123,25 L131,25 L131,11 M131,11 L131,25 L139,25 L139,18 L147,18 L147,25 L155,25 L155,11 M155,11 L155,25 L163,25 L163,18 L171,18 L171,25 L179,25 L179,11 M179,11 L179,25 L187,25 L187,18 L195,18 L195,25 L203,25 L203,11 M203,11 L203,25 L211,25 L211,18 L219,18 L219,25 L227,25 L227,11 M227,11 L227,25 L235,25 L235,18 L243,18 L243,25 L251,25 L251,11 M251,11 L251,25 L259,25 L259,18 L267,18 L267,25 L275,25 L275,11 M275,11 L275,25 L283,25 L283,18 L291,18 L291,25 L299,25 L299,11 M299,11 L299,25 L307,25 L307,18 L315,18 L315,25 L323,25 L323,11 M323,11 L323,25 L331,25 L331,18 L339,18 L339,25 L347,25 L347,11 M347,11 L347,25 L355,25 L355,18 L363,18 L363,25 L371,25 L371,11 M371,11 L371,25 L379,25 L379,18 L387,18 L387,25 L389,25 L389,11"/><path stroke="#b8860b" stroke-width="1.2" d="M11,249 L11,235 L19,235 L19,242 L27,242 L27,235 L35,235 L35,249 M35,249 L35,235 L43,235 L43,242 L51,242 L51,235 L59,235 L59,249 M59,249 L59,235 L67,235 L67,242 L75,242 L75,235 L83,235 L83,249 M83,249 L83,235 L91,235 L91,242 L99,242 L99,235 L107,235 L107,249 M107,249 L107,235 L115,235 L115,242 L123,242 L123,235 L131,235 L131,249 M131,249 L131,235 L139,235 L139,242 L147,242 L147,235 L155,235 L155,249 M155,249 L155,235 L163,235 L163,242 L171,242 L171,235 L179,235 L179,249 M179,249 L179,235 L187,235 L187,242 L195,242 L195,235 L203,235 L203,249 M203,249 L203,235 L211,235 L211,242 L219,242 L219,235 L227,235 L227,249 M227,249 L227,235 L235,235 L235,242 L243,242 L243,235 L251,235 L251,249 M251,249 L251,235 L259,235 L259,242 L267,242 L267,235 L275,235 L275,249 M275,249 L275,235 L283,235 L283,242 L291,242 L291,235 L299,235 L299,249 M299,249 L299,235 L307,235 L307,242 L315,242 L315,235 L323,235 L323,249 M323,249 L323,235 L331,235 L331,242 L339,242 L339,235 L347,235 L347,249 M347,249 L347,235 L355,235 L355,242 L363,242 L363,235 L371,235 L371,249 M371,249 L371,235 L379,235 L379,242 L387,242 L387,235 L389,235 L389,249"/><path stroke="#b8860b" stroke-width="1.2" d="M11,11 L25,11 L25,19 L18,19 L18,27 L25,27 L25,35 L11,35 M11,35 L25,35 L25,43 L18,43 L18,51 L25,51 L25,59 L11,59 M11,59 L25,59 L25,67 L18,67 L18,75 L25,75 L25,83 L11,83 M11,83 L25,83 L25,91 L18,91 L18,99 L25,99 L25,107 L11,107 M11,107 L25,107 L25,115 L18,115 L18,123 L25,123 L25,131 L11,131 M11,131 L25,131 L25,139 L18,139 L18,147 L25,147 L25,155 L11,155 M11,155 L25,155 L25,163 L18,163 L18,171 L25,171 L25,179 L11,179 M11,179 L25,179 L25,187 L18,187 L18,195 L25,195 L25,203 L11,203 M11,203 L25,203 L25,211 L18,211 L18,219 L25,219 L25,227 L11,227 M11,227 L25,227 L25,235 L18,235 L18,243 L25,243 L25,249 L11,249"/><path stroke="#b8860b" stroke-width="1.2" d="M389,11 L375,11 L375,19 L382,19 L382,27 L375,27 L375,35 L389,35 M389,35 L375,35 L375,43 L382,43 L382,51 L375,51 L375,59 L389,59 M389,59 L375,59 L375,67 L382,67 L382,75 L375,75 L375,83 L389,83 M389,83 L375,83 L375,91 L382,91 L382,99 L375,99 L375,107 L389,107 M389,107 L375,107 L375,115 L382,115 L382,123 L375,123 L375,131 L389,131 M389,131 L375,131 L375,139 L382,139 L382,147 L375,147 L375,155 L389,155 M389,155 L375,155 L375,163 L382,163 L382,171 L375,171 L375,179 L389,179 M389,179 L375,179 L375,187 L382,187 L382,195 L375,195 L375,203 L389,203 M389,203 L375,203 L375,211 L382,211 L382,219 L375,219 L375,227 L389,227 M389,227 L375,227 L375,235 L382,235 L382,243 L375,243 L375,249 L389,249"/></svg>
+          <div class="card-label" id="tcb-label">Answer</div>
+          <div id="tcb-main"></div><div id="tcb-sub"></div><div id="tcb-sub2"></div>
+          <button class="btn-speak" onclick="event.stopPropagation();speakTestCurrent()" title="Listen">🔊</button>
+          <div class="flip-hint">tap to hide</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="test-status" id="test-status"></div>
+  <div class="test-btns" id="test-btns" style="display:none">
+    <button class="btn-wrong" onclick="testAnswer(false)">✗ Wrong</button>
+    <button class="btn-correct" onclick="testAnswer(true)">✓ Got it</button>
+  </div>
+</div>
+
+<!-- Celebration -->
+<div id="test-complete" style="display:none">
+  <div class="celebration-stage">
+    <div class="cel-creatures">
+      <div class="cel-tiger" id="cel-tiger">
+        <svg width="72" height="72" viewBox="0 0 64 64" fill="none">
+          <ellipse cx="28" cy="38" rx="16" ry="11" fill="rgba(184,134,11,.35)" stroke="rgba(245,180,50,.7)" stroke-width="1"/>
+          <ellipse cx="44" cy="28" rx="11" ry="10" fill="rgba(184,134,11,.4)" stroke="rgba(245,180,50,.75)" stroke-width="1"/>
+          <polygon points="37,20 40,14 43,20" fill="rgba(245,200,80,.7)"/>
+          <polygon points="45,20 48,14 51,20" fill="rgba(245,200,80,.7)"/>
+          <circle cx="42" cy="26" r="1.8" fill="rgba(245,220,100,.95)"/><circle cx="42" cy="26" r=".8" fill="#1a1208"/>
+          <line x1="55" y1="30" x2="62" y2="28" stroke="rgba(245,200,80,.5)" stroke-width=".7"/>
+          <line x1="55" y1="32" x2="62" y2="33" stroke="rgba(245,200,80,.5)" stroke-width=".7"/>
+          <path d="M14 40 Q8 36 6 28 Q5 22 10 20" stroke="rgba(245,200,80,.55)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <line x1="22" y1="47" x2="20" y2="55" stroke="rgba(245,200,80,.55)" stroke-width="2.2" stroke-linecap="round"/>
+          <line x1="28" y1="49" x2="27" y2="57" stroke="rgba(245,200,80,.5)" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="cel-message" id="cel-message"></div>
+      <div class="cel-dragon" id="cel-dragon">
+        <svg width="72" height="72" viewBox="0 0 64 64" fill="none">
+          <path d="M52 10 Q58 18 54 28 Q50 38 42 42 Q34 46 28 42 Q20 38 18 30 Q16 22 22 18 Q28 14 34 18 Q40 22 38 30 Q36 36 30 36" stroke="rgba(184,134,11,.75)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <ellipse cx="52" cy="10" rx="7" ry="6" fill="rgba(184,134,11,.4)" stroke="rgba(245,180,50,.75)" stroke-width="1"/>
+          <circle cx="50" cy="9" r="2" fill="rgba(245,220,100,.95)"/><circle cx="50" cy="9" r=".85" fill="#1a1208"/>
+          <path d="M50 5 Q51 1 54 2" stroke="rgba(245,200,80,.65)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <path d="M30 36 Q26 40 24 44 Q23 48 26 50" stroke="rgba(184,134,11,.5)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <circle cx="8" cy="54" r="5" fill="rgba(184,134,11,.25)" stroke="rgba(245,180,50,.5)" stroke-width="1"/>
+        </svg>
+      </div>
+    </div>
+    <div class="cel-trophy" id="cel-trophy" style="display:none">🏆</div>
+    <div class="cel-score" id="cel-score"></div>
+    <div class="cel-confetti" id="cel-confetti"></div>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-top:.8rem">
+      <button class="btn-add" onclick="resetTest()">Test Again</button>
+      <button class="btn-add" style="background:var(--gold)" onclick="finishTest()">Finish</button>
+    </div>
+  </div>
+</div>
+
+<!-- Duel Section -->
+<div class="section">
+  <div class="section-title">Duel</div>
+  <div id="duel-test-section" style="display:none">
+    <div id="duel-prompt" class="duel-prompt"></div>
+    <div id="duel-choices" class="duel-choices"></div>
+    <div id="duel-pinyin-reveal" style="text-align:center;font-family:'Noto Sans','Noto Serif',sans-serif;font-size:1.1rem;color:var(--red);font-style:italic;min-height:1.6em;margin:.1rem 0;transition:opacity .25s;opacity:0"></div>
+    <div id="duel-feedback" class="duel-feedback"></div>
+    <div id="duel-status" class="test-status"></div>
+  </div>
+  <div id="duel-complete" style="display:none;text-align:center;padding:.8rem">
+    <div style="font-size:2rem;margin-bottom:.4rem">⚔️</div>
+    <div id="duel-complete-msg" style="font-family:'Ma Shan Zheng',serif;font-size:1.8rem;color:var(--gold);margin-bottom:.3rem"></div>
+    <div id="duel-complete-score" style="font-size:.82rem;color:var(--ink-light);margin-bottom:.8rem"></div>
+    <div style="display:flex;gap:.6rem;justify-content:center">
+      <button class="btn-add" onclick="startDuel()">Again</button>
+      <button class="btn-shuffle" onclick="shuffleDuel()">⇌ Shuffle</button>
+    </div>
+  </div>
+  <div id="duel-pair-list" style="margin-bottom:.5rem"></div>
+  <div id="duel-start-row" style="text-align:center">
+    <button class="btn-add" onclick="startDuel()">Start Duel →</button>
+    <button class="btn-shuffle" style="margin-left:.5rem" onclick="shuffleDuel()">⇌ Shuffle</button>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     GENERATOR PAGE
+═══════════════════════════════════════════════ -->
+
+<div class="page" id="page-generator">
+  <div class="page-header">
+    <div class="page-header-title">Generator</div>
+    <div class="page-header-nav"><button class="home-btn" onclick="showPage('home')">⌂ Home</button></div>
+  </div>
+  <div class="page-body">
+    <!-- Pinyin -->
+    <div class="section">
+      <div class="section-title">Pinyin Generator</div>
+      <div style="display:flex;gap:.8rem;align-items:center;margin-bottom:.75rem">
+        <div style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);opacity:.6;white-space:nowrap">Syllables</div>
+        <div class="mode-row" style="flex:1;max-width:120px">
+          <button class="mode-btn active" id="py-syl-1" onclick="setPySyllables(1)">1</button>
+          <button class="mode-btn" id="py-syl-2" onclick="setPySyllables(2)">2</button>
+        </div>
+      </div>
+      <div style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);opacity:.6;margin-bottom:.4rem">Tone</div>
+      <div class="mode-row" style="margin-bottom:.9rem">
+        <button class="mode-btn active" id="py-tone-r" onclick="setPyTone('random')">Random</button>
+        <button class="mode-btn" id="py-tone-1" onclick="setPyTone(1)">1st ā</button>
+        <button class="mode-btn" id="py-tone-2" onclick="setPyTone(2)">2nd á</button>
+        <button class="mode-btn" id="py-tone-3" onclick="setPyTone(3)">3rd ǎ</button>
+        <button class="mode-btn" id="py-tone-4" onclick="setPyTone(4)">4th à</button>
+      </div>
+      <div style="text-align:center;padding:1.2rem .5rem 1rem">
+        <div id="py-display" style="font-size:clamp(2.2rem,11vw,4.5rem);font-family:'Noto Sans','Noto Serif',Georgia,sans-serif;color:var(--ink);letter-spacing:.08em;line-height:1.2;min-height:1.3em;transition:opacity .1s">—</div>
+      </div>
+      <div class="controls">
+        <button class="btn-nav" id="py-btn-start" onclick="startPinyin()">▶ Start</button>
+        <button class="btn-nav" id="py-btn-stop" onclick="stopPinyin()" style="display:none">◼ Stop</button>
+        <button class="btn-shuffle" onclick="nextPinyin()">Next →</button>
+      </div>
+      <div style="margin-top:.9rem">
+        <div class="num-speed-row">
+          <span class="num-speed-label">Slow</span>
+          <input type="range" id="py-speed" min="1" max="16" value="6" step="1" class="num-slider" oninput="updatePySpeedDesc()"/>
+          <span class="num-speed-label">Fast</span>
+        </div>
+        <div class="num-speed-desc" id="py-speed-desc">5.5 sec</div>
+      </div>
+    </div>
+
+```
+<!-- Numbers -->
+<div class="section">
+  <div class="section-title">Number Generator</div>
+  <div style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);opacity:.6;margin-bottom:.5rem">Digits</div>
+  <div class="num-digit-row" style="margin-bottom:.9rem">
+    <button class="num-digit-btn active" onclick="setDigits(1)">1</button>
+    <button class="num-digit-btn" onclick="setDigits(2)">2</button>
+    <button class="num-digit-btn" onclick="setDigits(3)">3</button>
+    <button class="num-digit-btn" onclick="setDigits(4)">4</button>
+    <button class="num-digit-btn" onclick="setDigits(5)">5</button>
+    <button class="num-digit-btn" onclick="setDigits(6)">6</button>
+  </div>
+  <div class="num-display-section" style="padding:.8rem .5rem">
+    <div class="num-display" id="num-display">—</div>
+    <div class="num-chinese" id="num-chinese"></div>
+  </div>
+  <div class="controls" style="margin-bottom:.9rem">
+    <button class="btn-nav" id="num-btn-start" onclick="startNumbers()">▶ Start</button>
+    <button class="btn-nav" id="num-btn-stop" onclick="stopNumbers()" style="display:none">◼ Stop</button>
+    <button class="btn-shuffle" onclick="showNextNumber()" id="num-btn-next" style="display:none">Next →</button>
+  </div>
+  <div class="num-speed-row">
+    <span class="num-speed-label">Slow</span>
+    <input type="range" id="num-speed" min="1" max="16" value="6" step="1" class="num-slider"/>
+    <span class="num-speed-label">Fast</span>
+  </div>
+  <div class="num-speed-desc" id="num-speed-desc">5.5 sec</div>
+  <div style="margin-top:.8rem">
+    <div style="font-size:.63rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:.5rem">Reference</div>
+    <div class="num-ref-grid">
+      <div class="num-ref-row"><span class="num-ref-n">0</span><span class="num-ref-zh">零 líng</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">1</span><span class="num-ref-zh">一 yī</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">2</span><span class="num-ref-zh">二 èr</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">3</span><span class="num-ref-zh">三 sān</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">4</span><span class="num-ref-zh">四 sì</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">5</span><span class="num-ref-zh">五 wǔ</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">6</span><span class="num-ref-zh">六 liù</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">7</span><span class="num-ref-zh">七 qī</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">8</span><span class="num-ref-zh">八 bā</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">9</span><span class="num-ref-zh">九 jiǔ</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">10</span><span class="num-ref-zh">十 shí</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">100</span><span class="num-ref-zh">百 bǎi</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">1,000</span><span class="num-ref-zh">千 qiān</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">10,000</span><span class="num-ref-zh">万 wàn</span></div>
+      <div class="num-ref-row"><span class="num-ref-n">100M</span><span class="num-ref-zh">亿 yì</span></div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     VOCAB PAGE
+═══════════════════════════════════════════════ -->
+
+<div class="page" id="page-vocab">
+  <div class="page-header">
+    <div class="page-header-title">Add Vocab</div>
+    <div class="page-header-nav"><button class="home-btn" onclick="showPage('home')">⌂ Home</button></div>
+  </div>
+  <div class="page-body">
+    <!-- Groups -->
+    <div class="section">
+      <div class="section-title">Groups</div>
+      <div class="group-new-row">
+        <input type="text" id="inp-new-group" placeholder="e.g. Ikea, Starbucks, Chapter 3…" autocorrect="off"/>
+        <button class="btn-add" onclick="createGroup()">+ Group</button>
+      </div>
+      <div class="group-items" id="group-items" style="margin-top:.6rem"></div>
+    </div>
+
+```
+<!-- Add Word -->
+<div class="section">
+  <div class="section-title">Add Word</div>
+  <div class="input-grid">
+    <div class="field"><label>汉字</label><input type="text" id="inp-zh" placeholder="你好" autocomplete="off" autocorrect="off" autocapitalize="off"/></div>
+    <div class="field"><label>Pinyin</label><input type="text" id="inp-py" placeholder="nǐ hǎo" autocomplete="off" autocorrect="off" autocapitalize="off"/></div>
+    <div class="field"><label>English</label><input type="text" id="inp-en" placeholder="hello" autocomplete="off"/></div>
+    <div class="field"><label>Group</label><select id="inp-group"></select></div>
+    <button class="btn-add" onclick="addWord()">Add +</button>
+  </div>
+  <div class="bulk-row" style="margin-top:.85rem">
+    <div style="flex:1">
+      <textarea id="inp-bulk" placeholder="Paste multiple:&#10;你好 | nǐ hǎo | hello | groupname" autocorrect="off" autocapitalize="off"></textarea>
+      <div class="hint">Format: 汉字 | Pinyin | English | Group (optional)</div>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-top:.5rem">
+        <span style="font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light);opacity:.55;white-space:nowrap">Import into:</span>
+        <select id="bulk-import-group" class="filter-sel" style="flex:1"><option value="">Group from text</option></select>
+      </div>
+    </div>
+    <button class="btn-add" onclick="addBulk()">Import</button>
+  </div>
+</div>
+
+<!-- Edit Group List -->
+<div class="section">
+  <div style="display:flex;gap:.6rem;align-items:center;margin-bottom:.75rem">
+    <div class="section-title" style="margin-bottom:0;white-space:nowrap">Edit Group List</div>
+    <select id="egl-group-select" class="deck-select" onchange="renderEditGroupList()"></select>
+  </div>
+  <div id="egl-content"></div>
+</div>
+
+<!-- Dueling Pairs -->
+<div class="section">
+  <div class="section-title">Dueling Pairs</div>
+  <p style="font-size:.73rem;color:var(--ink-light);opacity:.6;margin-bottom:.7rem;line-height:1.45">Characters that look similar but have different meanings.</p>
+  <div id="duel-pair-list-vocab"></div>
+  <button class="btn-add" style="width:100%;margin-top:.5rem" onclick="openDuelAdd()">+ Add Pair</button>
+</div>
+
+<!-- Backup -->
+<div class="section">
+  <div class="section-title">Backup &amp; Transfer</div>
+  <p style="font-size:.76rem;color:var(--ink-light);opacity:.7;margin-bottom:.8rem;line-height:1.55">Export saves all words &amp; groups to a <code>.json</code> file.</p>
+  <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+    <button class="btn-add" onclick="exportData()">⬇ Export</button>
+    <button class="btn-gold" onclick="importData()">⬆ Import</button>
+  </div>
+</div>
+
+<!-- All Words (raw list) -->
+<div class="section">
+  <div class="list-header">
+    <h2>All Words (<span id="word-count">0</span>)</h2>
+    <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
+      <select id="filter-group-vocab" class="filter-sel" onchange="renderWordList()"></select>
+      <button class="btn-sm" id="btn-select-all" onclick="toggleSelectAll()" style="display:none">Select all</button>
+    </div>
+  </div>
+  <div id="bulk-assign-bar" style="display:none;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">
+    <span id="bulk-selected-count" style="font-size:.72rem;color:var(--gold);opacity:.85"></span>
+    <select id="bulk-assign-group" class="filter-sel"></select>
+    <button class="btn-add" style="padding:.35rem .75rem;font-size:.75rem" onclick="bulkAssign(false)">+ Add</button>
+    <button class="btn-add" style="padding:.35rem .75rem;font-size:.75rem;background:var(--red)" onclick="bulkAssign(true)">✕ Remove</button>
+    <button class="btn-sm danger" onclick="clearSelection()">Cancel</button>
+  </div>
+  <div class="word-items" id="word-items"></div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- EDIT WORD MODAL -->
+
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header"><h3>Edit Word</h3><button class="modal-close" onclick="closeEditModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>汉字</label><input type="text" id="edit-zh" autocorrect="off" autocapitalize="off"/></div>
+      <div class="modal-field"><label>Pinyin</label><input type="text" id="edit-py" autocorrect="off" autocapitalize="off"/></div>
+      <div class="modal-field"><label>English</label><input type="text" id="edit-en"/></div>
+      <div class="modal-field"><label>Groups</label><div class="tag-checkboxes" id="edit-group-tags"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-save" onclick="saveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- GROUP EDITOR MODAL -->
+
+<div class="modal-overlay" id="group-editor-modal">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header"><h3 id="group-editor-title">Edit Group</h3><button class="modal-close" onclick="closeGroupEditor()">✕</button></div>
+    <div class="modal-body">
+      <div class="editor-filter-row">
+        <button class="editor-filter-btn active" id="gef-all" onclick="setGroupEditorFilter('all')">All words</button>
+        <button class="editor-filter-btn" id="gef-in" onclick="setGroupEditorFilter('in')">In group</button>
+        <button class="editor-filter-btn" id="gef-out" onclick="setGroupEditorFilter('out')">Not in group</button>
+      </div>
+      <div class="gew-words-list" id="gew-words-list"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeGroupEditor()">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PAGE NAVIGATION ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  // Stop generators when leaving
+  if(name!=='generator'){ stopNumbers(); stopPinyin(); }
+  // Refresh data-dependent views
+  if(name==='study'){ renderDeckSelects(); buildDeck(); renderCard(); }
+  if(name==='test'){ renderDeckSelects(); updateTestCountLabel(); renderDuelPairList(); }
+  if(name==='display'){ populateWdlGroupSelect(); renderWordDisplay(); }
+  if(name==='vocab'){ renderWordList(); renderGroupPanel(); renderDuelPairListVocab(); populateEglSelect(); renderEditGroupList(); }
+  // Scroll to top
+  const pb=document.querySelector('#page-'+name+' .page-body');
+  if(pb) pb.scrollTop=0;
+}
+
+// ── STATE ──
+let words  = JSON.parse(localStorage.getItem('hzc_words')  || '[]');
+let groups = JSON.parse(localStorage.getItem('hzc_groups') || '[]').filter(g=>g!=='All');
+words = words.map(w => { if(!w.groups){w.groups=w.group?[w.group]:[];delete w.group;} return w; });
+
+let deck=[], current=0, flipped=false, mode='hanzi', activeGroup='All';
+const MAFAN='麻烦';
+let testDeck=[], testRemaining=[], testFlipped=false, testMode='hanzi';
+let testActiveGroup='All', testCorrect=0, testWrong=0, testTotal=0;
+let testConsecWrong={}, testMultiWrong=new Set(), testNewMafan=[];
+
+if(!groups.includes(MAFAN)) groups.push(MAFAN);
+
+function save(){localStorage.setItem('hzc_words',JSON.stringify(words));localStorage.setItem('hzc_groups',JSON.stringify(groups));}
+
+// ── ESCAPE ──
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+// ── SPEECH ──
+let zhVoice=null;
+function initVoice(){if(zhVoice)return;const v=speechSynthesis.getVoices();zhVoice=v.find(x=>x.lang==='zh-CN')||v.find(x=>x.lang.startsWith('zh'))||null;}
+if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=initVoice;initVoice();}
+function speak(text,lang='zh-CN'){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=0.85;if(zhVoice)u.voice=zhVoice;speechSynthesis.speak(u);}
+function speakCurrent(){if(!deck.length)return;speak(deck[current].chinese);}
+function speakTestCurrent(){if(!testRemaining.length)return;speak(testRemaining[0].chinese);}
+
+// ── EXPORT / IMPORT ──
+function exportData(){const blob=new Blob([JSON.stringify({words,groups},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='anji-cards.json';a.click();}
+function importData(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.words||!Array.isArray(data.words)){alert('Invalid file.');return;}
+      data.words=data.words.map(w=>{if(!w.groups){w.groups=w.group?[w.group]:[];delete w.group;}return w;});
+      const merge=confirm('Merge with existing cards?\n(Cancel = replace all)');
+      if(merge){words=[...words,...data.words];groups=[...new Set([...groups,...(data.groups||[])])]}
+      else{words=data.words;groups=(data.groups||[]).filter(g=>g!=='All')}
+      save();renderAll();alert(`Imported ${data.words.length} words.`);
+    }catch{alert('Could not read file.');}};
+    reader.readAsText(file);
+  };input.click();
+}
+
+// ── DECK SELECTS ──
+function renderDeckSelects(){
+  const opts=['<option value="All">All words</option>',...groups.map(g=>`<option value="${esc(g)}">${esc(g)} (${words.filter(w=>(w.groups||[]).includes(g)).length})</option>`)].join('');
+  ['study-deck-select','test-deck-select'].forEach(id=>{const el=document.getElementById(id);if(el){const v=el.value;el.innerHTML=opts;if(v)el.value=v;}});
+}
+function onStudyDeckChange(){activeGroup=document.getElementById('study-deck-select').value||'All';buildDeck();renderCard();}
+function onTestDeckChange(){testActiveGroup=document.getElementById('test-deck-select').value||'All';updateTestCountLabel();}
+
+// ── DUEL ──
+let duelPairs=JSON.parse(localStorage.getItem('hzc_duel')||'[]');
+let duelQueue=[], duelCorrect=0, duelWrong=0;
+function saveDuel(){localStorage.setItem('hzc_duel',JSON.stringify(duelPairs));}
+
+function openDuelAdd(){
+  const list=document.getElementById('duel-pair-list-vocab');
+  if(document.getElementById('duel-add-form'))return;
+  const form=document.createElement('div');form.id='duel-add-form';
+  form.style.cssText='background:rgba(255,255,255,.7);border:1px solid var(--border);border-radius:8px;padding:.8rem;margin-bottom:.6rem';
+  form.innerHTML=`<div style="font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Add Pair</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.35rem;margin-bottom:.5rem">
+      <div style="font-size:.62rem;color:var(--ink-light);opacity:.55;text-align:center">Character A</div>
+      <div style="font-size:.62rem;color:var(--ink-light);opacity:.55;text-align:center">Character B</div>
+      <input id="da-zh" placeholder="汉字" style="padding:.42rem .5rem;border:1px solid var(--border);border-radius:5px;font-family:'Noto Serif SC',serif;font-size:1.1rem;outline:none;text-align:center" autocorrect="off" autocapitalize="off"/>
+      <input id="db-zh" placeholder="汉字" style="padding:.42rem .5rem;border:1px solid var(--border);border-radius:5px;font-family:'Noto Serif SC',serif;font-size:1.1rem;outline:none;text-align:center" autocorrect="off" autocapitalize="off"/>
+      <input id="da-py" placeholder="pīnyīn" style="padding:.38rem .5rem;border:1px solid var(--border);border-radius:5px;font-size:.8rem;outline:none" autocorrect="off" autocapitalize="off"/>
+      <input id="db-py" placeholder="pīnyīn" style="padding:.38rem .5rem;border:1px solid var(--border);border-radius:5px;font-size:.8rem;outline:none" autocorrect="off" autocapitalize="off"/>
+      <input id="da-en" placeholder="English" style="padding:.38rem .5rem;border:1px solid var(--border);border-radius:5px;font-size:.8rem;outline:none" autocorrect="off"/>
+      <input id="db-en" placeholder="English" style="padding:.38rem .5rem;border:1px solid var(--border);border-radius:5px;font-size:.8rem;outline:none" autocorrect="off"/>
+    </div>
+    <div style="display:flex;gap:.5rem;justify-content:flex-end">
+      <button class="btn-sm" onclick="document.getElementById('duel-add-form').remove()">Cancel</button>
+      <button class="btn-add" onclick="saveDuelPair()">Save</button>
+    </div>`;
+  list.prepend(form);
+}
+function saveDuelPair(){
+  const azh=document.getElementById('da-zh').value.trim(),apy=document.getElementById('da-py').value.trim(),aen=document.getElementById('da-en').value.trim();
+  const bzh=document.getElementById('db-zh').value.trim(),bpy=document.getElementById('db-py').value.trim(),ben=document.getElementById('db-en').value.trim();
+  if(!azh||!aen||!bzh||!ben){alert('Fill in at least character and English for both.');return;}
+  duelPairs.push({a:{chinese:azh,pinyin:apy,english:aen},b:{chinese:bzh,pinyin:bpy,english:ben}});
+  saveDuel();document.getElementById('duel-add-form').remove();
+  renderDuelPairList();renderDuelPairListVocab();
+}
+function deleteDuelPair(i){duelPairs.splice(i,1);saveDuel();renderDuelPairList();}
+function renderDuelPairList(){_renderDuelPairs(document.getElementById('duel-pair-list'),false);const sr=document.getElementById('duel-start-row');if(sr)sr.style.display=duelPairs.length?'block':'none';}
+function renderDuelPairListVocab(){_renderDuelPairs(document.getElementById('duel-pair-list-vocab'),true);}
+function _renderDuelPairs(container,showDelete){
+  if(!container)return;container.innerHTML='';
+  if(!duelPairs.length){container.innerHTML='<div style="font-size:.78rem;color:var(--ink-light);opacity:.38;padding:.2rem 0">No pairs yet.</div>';return;}
+  duelPairs.forEach((p,i)=>{
+    // Wrapper for the whole pair
+    const pairWrap=document.createElement('div');
+    pairWrap.style.cssText='margin-bottom:.9rem';
+
+    // Row for A
+    const rowA=document.createElement('div');
+    rowA.style.cssText='display:flex;align-items:baseline;gap:.5rem';
+    const charA=document.createElement('span');charA.style.cssText="font-family:'Ma Shan Zheng','Noto Serif SC',serif;font-size:1.4rem;color:var(--ink);line-height:1";charA.textContent=p.a.chinese;
+    const pyA=document.createElement('span');pyA.style.cssText='font-size:.8rem;color:var(--red);font-style:italic;opacity:.85';pyA.textContent=p.a.pinyin||'';
+    rowA.appendChild(charA);rowA.appendChild(pyA);
+
+    // Row for B — no border/divider between A and B
+    const rowB=document.createElement('div');
+    rowB.style.cssText='display:flex;align-items:baseline;gap:.5rem;margin-top:.1rem';
+    const charB=document.createElement('span');charB.style.cssText="font-family:'Ma Shan Zheng','Noto Serif SC',serif;font-size:1.4rem;color:var(--ink);line-height:1";charB.textContent=p.b.chinese;
+    const pyB=document.createElement('span');pyB.style.cssText='font-size:.8rem;color:var(--red);font-style:italic;opacity:.85';pyB.textContent=p.b.pinyin||'';
+    rowB.appendChild(charB);rowB.appendChild(pyB);
+
+    const leftCol=document.createElement('div');leftCol.style.flex='1';
+    leftCol.appendChild(rowA);leftCol.appendChild(rowB);
+
+    const wrapper=document.createElement('div');
+    wrapper.style.cssText='display:flex;align-items:center;gap:.5rem';
+    wrapper.appendChild(leftCol);
+
+    if(showDelete){
+      const delBtn=document.createElement('button');
+      delBtn.className='btn-del';delBtn.textContent='✕';
+      delBtn.style.cssText='flex-shrink:0;font-size:.85rem';
+      delBtn.addEventListener('click',()=>{deleteDuelPair(i);renderDuelPairListVocab();renderEditGroupList();});
+      wrapper.appendChild(delBtn);
+    }
+    pairWrap.appendChild(wrapper);
+
+    // Divider between pairs (not after last)
+    if(i<duelPairs.length-1){
+      const div=document.createElement('div');
+      div.style.cssText='height:1px;background:linear-gradient(to right,rgba(184,134,11,.15),transparent);margin-top:.9rem';
+      pairWrap.appendChild(div);
+    }
+    container.appendChild(pairWrap);
+  });
+}
+function startDuel(){
+  if(!duelPairs.length){alert('Add some pairs in Add Vocab first.');return;}
+  duelQueue=duelPairs.map(p=>{const flip=Math.random()<0.5;const prompt=flip?p.b:p.a;const wrong=flip?p.a:p.b;return{type:'char-to-en',prompt,correct:prompt,wrong};});
+  duelCorrect=0;duelWrong=0;
+  document.getElementById('duel-start-row').style.display='none';
+  document.getElementById('duel-complete').style.display='none';
+  document.getElementById('duel-test-section').style.display='block';
+  renderDuelQuestion();
+}
+function shuffleDuel(){
+  for(let i=duelPairs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[duelPairs[i],duelPairs[j]]=[duelPairs[j],duelPairs[i]];}
+  saveDuel();renderDuelPairList();renderDuelPairListVocab();startDuel();
+}
+function renderDuelQuestion(){
+  if(!duelQueue.length){showDuelComplete();return;}
+  const q=duelQueue[0];
+  const prompt=document.getElementById('duel-prompt'),choices=document.getElementById('duel-choices'),feedback=document.getElementById('duel-feedback'),pyEl=document.getElementById('duel-pinyin-reveal');
+  feedback.textContent='';if(pyEl){pyEl.style.opacity='0';pyEl.textContent='';}
+  document.getElementById('duel-status').textContent=`${duelCorrect+duelWrong+1} / ${duelCorrect+duelWrong+duelQueue.length}  ·  ${duelCorrect} correct`;
+  prompt.innerHTML='';const pSpan=document.createElement('span');pSpan.className='dp-char';pSpan.textContent=q.prompt.chinese;prompt.appendChild(pSpan);
+  choices.innerHTML='';
+  [{display:q.correct.english,value:q.correct.english,pinyin:q.correct.pinyin||'',correct:q.correct.english},
+   {display:q.wrong.english,value:q.wrong.english,pinyin:q.wrong.pinyin||'',correct:q.correct.english}].sort(()=>Math.random()-.5)
+  .forEach(o=>{const div=document.createElement('div');div.className='duel-choice';div.textContent=o.display;div.addEventListener('click',()=>duelAnswer(div,o.value,o.correct,o.pinyin,q.correct.pinyin||''));choices.appendChild(div);});
+}
+function duelAnswer(el,chosen,correct,chosenPinyin,correctPinyin){
+  document.querySelectorAll('.duel-choice').forEach(c=>c.style.pointerEvents='none');
+  const isCorrect=chosen===correct;
+  el.classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect){document.querySelectorAll('.duel-choice').forEach(c=>{if(c.textContent.trim()===correct)c.classList.add('correct');});duelWrong++;}
+  else{duelCorrect++;}
+  document.getElementById('duel-feedback').textContent=isCorrect?'✓ Correct!':'✗ Wrong';
+  const pyEl=document.getElementById('duel-pinyin-reveal');
+  if(pyEl){
+    if(isCorrect&&chosenPinyin){pyEl.textContent=chosenPinyin;pyEl.style.color='var(--green)';}
+    else if(!isCorrect){const w=chosenPinyin?`${chosenPinyin} ✗`:'';const c=correctPinyin?`${correctPinyin} ✓`:'';pyEl.textContent=[w,c].filter(Boolean).join('   ');pyEl.style.color='var(--ink-light)';}
+    pyEl.style.opacity='1';
+  }
+  duelQueue.shift();
+  setTimeout(()=>{if(pyEl)pyEl.style.opacity='0';renderDuelQuestion();},1400);
+}
+function showDuelComplete(){
+  document.getElementById('duel-test-section').style.display='none';
+  document.getElementById('duel-complete').style.display='block';
+  document.getElementById('duel-start-row').style.display='block';
+  const pct=duelCorrect/(duelCorrect+duelWrong)||0;
+  document.getElementById('duel-complete-msg').textContent=pct>=1?'好极了！':pct>=.8?'很好！':'加油！';
+  document.getElementById('duel-complete-score').textContent=`${duelCorrect} correct · ${duelWrong} wrong`;
+}
+
+// ── NUMBERS ──
+let numDigits=1,numInterval=null,numRunning=false;
+const numSpeeds=[null,...Array.from({length:16},(_,i)=>Math.round((8-(i*.5))*1000))];
+const numSpeedLabels=[null,...Array.from({length:16},(_,i)=>{const s=8-(i*.5);return`${s} sec`;})];
+const zhDigits=['零','一','二','三','四','五','六','七','八','九'];
+function toChineseNumber(n){
+  if(n===0)return{chars:'零'};
+  const pinyinMap={'零':'líng','一':'yī','二':'èr','三':'sān','四':'sì','五':'wǔ','六':'liù','七':'qī','八':'bā','九':'jiǔ','十':'shí','百':'bǎi','千':'qiān','万':'wàn','亿':'yì'};
+  const s=n.toString();const len=s.length;
+  if(len===1)return{chars:zhDigits[n]};
+  let chars='';
+  for(let i=0;i<len;i++){
+    const d=parseInt(s[i]);const pos=len-1-i;
+    const unitChars=['','十','百','千','万','十万','百万','千万','亿'];
+    if(d===0){if(i<len-1&&parseInt(s[i+1])!==0&&chars.slice(-1)!=='零')chars+='零';}
+    else{if(d===1&&pos===1&&i===0)chars+='十';else{chars+=zhDigits[d];if(pos>0)chars+=unitChars[pos];}}
+  }
+  return{chars:chars.trim()};
+}
+function genNumber(){const min=Math.pow(10,numDigits-1),max=Math.pow(10,numDigits)-1;return numDigits===1?Math.floor(Math.random()*10):Math.floor(Math.random()*(max-min+1))+min;}
+function showNextNumber(){
+  const n=genNumber(),disp=document.getElementById('num-display'),zh=document.getElementById('num-chinese');
+  disp.classList.add('flash');
+  setTimeout(()=>{const r=toChineseNumber(n);disp.textContent=n.toLocaleString();zh.innerHTML=`<span style="font-size:1.4rem;letter-spacing:.15em">${r.chars}</span>`;disp.classList.remove('flash');},120);
+}
+function setDigits(d){numDigits=d;document.querySelectorAll('.num-digit-btn').forEach((b,i)=>b.classList.toggle('active',i+1===d));if(numRunning){stopNumbers();startNumbers();}}
+function updateSpeedDesc(){const v=parseInt(document.getElementById('num-speed').value);document.getElementById('num-speed-desc').textContent=numSpeedLabels[v];}
+document.getElementById('num-speed').addEventListener('input',()=>{updateSpeedDesc();if(numRunning){stopNumbers();startNumbers();}});
+updateSpeedDesc();
+function startNumbers(){numRunning=true;document.getElementById('num-btn-start').style.display='none';document.getElementById('num-btn-stop').style.display='';document.getElementById('num-btn-next').style.display='';showNextNumber();const v=parseInt(document.getElementById('num-speed').value);numInterval=setInterval(showNextNumber,numSpeeds[v]);}
+function stopNumbers(){numRunning=false;clearInterval(numInterval);numInterval=null;const s=document.getElementById('num-btn-start');const st=document.getElementById('num-btn-stop');if(s)s.style.display='';if(st)st.style.display='none';document.getElementById('num-btn-next').style.display='none';}
+
+// ── STUDY MODE ──
+function setMode(m){
+  mode=m;
+  ['hz','py','en'].forEach(k=>document.getElementById('mode-'+k).classList.remove('active'));
+  document.getElementById('mode-chunk').classList.remove('active');
+  if(m==='chunk'){
+    document.getElementById('mode-chunk').classList.add('active');
+    document.getElementById('study-standard').style.display='none';
+    document.getElementById('study-chunk').style.display='block';
+    if(deck.length) initChunk();
+    return;
+  }
+  document.getElementById('study-standard').style.display='block';
+  document.getElementById('study-chunk').style.display='none';
+  document.getElementById('mode-'+{hanzi:'hz',pinyin:'py',english:'en'}[m]).classList.add('active');
+  flipped=false;document.getElementById('flash-card').classList.remove('flipped');renderCard();
+}
+function wordInGroup(w,g){return g==='All'||(w.groups||[]).includes(g);}
+
+// ── GROUPS ──
+function createGroup(name){
+  const val=name||document.getElementById('inp-new-group').value.trim();
+  if(!val||groups.includes(val))return;
+  groups.push(val);save();const el=document.getElementById('inp-new-group');if(el)el.value='';
+  renderAll();
+}
+function deleteGroup(name){
+  if(!confirm(`Delete group "${name}"?\nWords will remain but lose this group tag.`))return;
+  groups=groups.filter(g=>g!==name);words=words.map(w=>({...w,groups:(w.groups||[]).filter(g=>g!==name)}));
+  if(activeGroup===name)activeGroup='All';if(testActiveGroup===name)testActiveGroup='All';
+  save();renderAll();
+}
+
+// ── GROUP EDITOR ──
+let editingGroup='',groupEditorFilter='all';
+function openGroupEditor(g){editingGroup=g;groupEditorFilter='all';document.getElementById('group-editor-title').textContent=`Edit: ${g}`;['all','in','out'].forEach(f=>document.getElementById('gef-'+f).classList.toggle('active',f==='all'));renderGroupEditorList();document.getElementById('group-editor-modal').classList.add('open');}
+function closeGroupEditor(){document.getElementById('group-editor-modal').classList.remove('open');editingGroup='';renderAll();}
+function setGroupEditorFilter(f){groupEditorFilter=f;['all','in','out'].forEach(k=>document.getElementById('gef-'+k).classList.toggle('active',k===f));renderGroupEditorList();}
+function renderGroupEditorList(){
+  const list=document.getElementById('gew-words-list');list.innerHTML='';
+  let visible=words;
+  if(groupEditorFilter==='in')visible=words.filter(w=>(w.groups||[]).includes(editingGroup));
+  if(groupEditorFilter==='out')visible=words.filter(w=>!(w.groups||[]).includes(editingGroup));
+  if(!visible.length){list.innerHTML='<div style="font-size:.8rem;opacity:.38;padding:.4rem 0">No words match.</div>';return;}
+  visible.forEach(w=>{
+    const ri=words.indexOf(w),inGrp=(w.groups||[]).includes(editingGroup);
+    const el=document.createElement('div');el.className='group-editor-word';
+    el.innerHTML=`<div class="gew-left"><span class="gew-char">${esc(w.chinese)}</span><div class="gew-info"><span class="gew-en">${esc(w.english)}</span><span class="gew-py">${esc(w.pinyin||'')}</span></div></div><button class="gew-toggle${inGrp?' in-group':''}">${inGrp?'✓ In group':'+ Add'}</button>`;
+    el.querySelector('.gew-toggle').addEventListener('click',()=>toggleWordGroup(ri));
+    list.appendChild(el);
+  });
+}
+function toggleWordGroup(ri){const w=words[ri],gs=w.groups||[];if(gs.includes(editingGroup))w.groups=gs.filter(g=>g!==editingGroup);else w.groups=[...gs,editingGroup];save();renderGroupEditorList();}
+
+// ── WORDS ──
+function addWord(){
+  const zh=document.getElementById('inp-zh').value.trim(),py=document.getElementById('inp-py').value.trim(),en=document.getElementById('inp-en').value.trim(),gr=document.getElementById('inp-group').value||'';
+  if(!zh||!en)return;
+  words.push({chinese:zh,pinyin:py,english:en,groups:gr?[gr]:[]});save();
+  ['inp-zh','inp-py','inp-en'].forEach(id=>document.getElementById(id).value='');document.getElementById('inp-zh').focus();renderAll();
+}
+function addBulk(){
+  const raw=document.getElementById('inp-bulk').value.trim();if(!raw)return;
+  const overrideGroup=document.getElementById('bulk-import-group').value||'';
+  const newGroups=new Set();
+  raw.split('\n').forEach(line=>{
+    const p=line.split('|').map(s=>s.trim());if(p.length<2||!p[0])return;
+    let chinese=p[0],pinyin='',english='',group='';
+    if(p.length===2)english=p[1];else if(p.length===3){pinyin=p[1];english=p[2];}else{pinyin=p[1];english=p[2];group=p[3]||'';}
+    if(!english)return;
+    const finalGroup=overrideGroup||group;
+    if(finalGroup&&!groups.includes(finalGroup))newGroups.add(finalGroup);
+    words.push({chinese,pinyin,english,groups:finalGroup?[finalGroup]:[]});
+  });
+  newGroups.forEach(g=>groups.push(g));save();document.getElementById('inp-bulk').value='';renderAll();
+}
+function deleteWord(i){words.splice(i,1);save();renderAll();}
+
+// ── EDIT MODAL ──
+let editIndex=-1;
+function openEditModal(i){
+  editIndex=i;const w=words[i];
+  document.getElementById('edit-zh').value=w.chinese;document.getElementById('edit-py').value=w.pinyin||'';document.getElementById('edit-en').value=w.english;
+  const box=document.getElementById('edit-group-tags');box.innerHTML='';
+  groups.forEach(g=>{const checked=(w.groups||[]).includes(g);const el=document.createElement('div');el.className='tag-cb'+(checked?' checked':'');el.dataset.group=g;el.textContent=g;el.onclick=()=>el.classList.toggle('checked');box.appendChild(el);});
+  if(!groups.length)box.innerHTML='<span style="font-size:.75rem;opacity:.45">No groups yet</span>';
+  document.getElementById('edit-modal').classList.add('open');setTimeout(()=>document.getElementById('edit-zh').focus(),80);
+}
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');editIndex=-1;}
+function saveEdit(){
+  if(editIndex<0)return;
+  const selGroups=[...document.querySelectorAll('#edit-group-tags .tag-cb.checked')].map(el=>el.dataset.group);
+  words[editIndex]={chinese:document.getElementById('edit-zh').value.trim()||words[editIndex].chinese,pinyin:document.getElementById('edit-py').value.trim(),english:document.getElementById('edit-en').value.trim()||words[editIndex].english,groups:selGroups};
+  save();renderAll();closeEditModal();
+}
+document.getElementById('edit-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeEditModal();});
+document.getElementById('group-editor-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeGroupEditor();});
+
+// ── DECK ──
+function buildDeck(){deck=words.filter(w=>wordInGroup(w,activeGroup));if(current>=deck.length)current=0;flipped=false;document.getElementById('flash-card').classList.remove('flipped');}
+function navigate(dir){if(!deck.length)return;flipped=false;document.getElementById('flash-card').classList.remove('flipped');current=(current+dir+deck.length)%deck.length;renderCard();}
+function flipCard(){flipped=!flipped;document.getElementById('flash-card').classList.toggle('flipped',flipped);}
+function shuffle(){for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}current=0;flipped=false;document.getElementById('flash-card').classList.remove('flipped');renderCard();}
+
+// ── RENDER CARD ──
+function setEl(id,cls,text){const el=document.getElementById(id);el.className=cls;el.textContent=text;}
+function populateCardFaces(w,cfLabel,cbLabel,cfMain,cfSub,cbMain,cbSub,cbSub2,m){
+  if(m==='hanzi'){document.getElementById(cfLabel).textContent='Chinese';setEl(cfMain,'f-chinese',w.chinese);setEl(cfSub,'','');document.getElementById(cbLabel).textContent='Answer';setEl(cbMain,'b-pinyin-large',w.pinyin||'—');setEl(cbSub,'f-english',w.english);setEl(cbSub2,'','');}
+  else if(m==='pinyin'){document.getElementById(cfLabel).textContent='Pinyin';setEl(cfMain,'f-pinyin',w.pinyin||'—');setEl(cfSub,'','');document.getElementById(cbLabel).textContent='Answer';setEl(cbMain,'b-chinese-large',w.chinese);setEl(cbSub,'f-english',w.english);setEl(cbSub2,'','');}
+  else{document.getElementById(cfLabel).textContent='English';setEl(cfMain,'f-english-front',w.english);setEl(cfSub,'','');document.getElementById(cbLabel).textContent='Answer';setEl(cbMain,'b-chinese-large',w.chinese);setEl(cbSub,'b-pinyin-large',w.pinyin||'');setEl(cbSub2,'','');}
+}
+function renderCard(){
+  const has=deck.length>0;
+  document.getElementById('study-empty').style.display=has?'none':'flex';document.getElementById('study-card-wrapper').style.display=has?'block':'none';
+  document.getElementById('study-controls').style.display=has?'flex':'none';document.getElementById('study-swipe-hint').style.display=has?'block':'none';
+  if(!has)return;
+  const w=deck[current];populateCardFaces(w,'cf-label','cb-label','cf-main','cf-sub','cb-main','cb-sub','cb-sub2',mode);
+  document.getElementById('prog-text').textContent=`${current+1} / ${deck.length}`;
+  document.getElementById('btn-prev').disabled=deck.length<=1;document.getElementById('btn-next').disabled=deck.length<=1;
+}
+
+// ── TEST ──
+function setTestMode(m){testMode=m;['hz','py','en'].forEach(k=>document.getElementById('tmode-'+k).classList.remove('active'));document.getElementById('tmode-'+{hanzi:'hz',pinyin:'py',english:'en'}[m]).classList.add('active');}
+function updateTestCountLabel(){
+  const pool=words.filter(w=>wordInGroup(w,testActiveGroup));const max=pool.length||10;
+  const slider=document.getElementById('test-count-slider');slider.max=max;const v=parseInt(slider.value);const capped=Math.min(v,max);slider.value=capped;
+  document.getElementById('test-count-label').textContent=capped>=max?`All ${max} cards`:`${capped} cards`;
+}
+function startTest(){
+  const pool=words.filter(w=>wordInGroup(w,testActiveGroup));if(!pool.length){alert('No words in this deck.');return;}
+  const shuffled=[...pool];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
+  const count=Math.min(parseInt(document.getElementById('test-count-slider').value)||pool.length,pool.length);
+  testDeck=shuffled.slice(0,count);testRemaining=[...testDeck];testCorrect=0;testWrong=0;testTotal=testDeck.length;testFlipped=false;testConsecWrong={};testMultiWrong=new Set();testNewMafan=[];
+  document.getElementById('test-start-section').style.display='none';document.getElementById('test-area').style.display='block';document.getElementById('test-complete').style.display='none';
+  document.getElementById('test-card-wrapper').style.display='block';document.getElementById('test-btns').style.display='none';document.getElementById('test-card').classList.remove('flipped');renderTestCard();
+}
+function flipTestCard(){if(!testRemaining.length)return;testFlipped=!testFlipped;document.getElementById('test-card').classList.toggle('flipped',testFlipped);document.getElementById('test-btns').style.display=testFlipped?'flex':'none';}
+function testAnswer(correct){
+  if(!testRemaining.length)return;
+  // Flash the card back green or red for 380ms before advancing
+  const card=document.getElementById('test-card');
+  const overlay=document.createElement('div');
+  overlay.style.cssText=`position:absolute;inset:0;border-radius:12px;z-index:10;pointer-events:none;background:${correct?'rgba(46,125,79,.55)':'rgba(184,48,48,.55)'};transition:opacity .25s`;
+  card.appendChild(overlay);
+  // Disable buttons immediately to prevent double-tap
+  document.querySelectorAll('.btn-wrong,.btn-correct').forEach(b=>b.style.pointerEvents='none');
+  setTimeout(()=>{
+    overlay.style.opacity='0';
+    setTimeout(()=>{
+      overlay.remove();
+      document.querySelectorAll('.btn-wrong,.btn-correct').forEach(b=>b.style.pointerEvents='');
+      // Now process the answer
+      const w=testRemaining.shift();const wi=words.indexOf(w);
+      if(correct){testCorrect++;testConsecWrong[wi]=0;}
+      else{testWrong++;testConsecWrong[wi]=(testConsecWrong[wi]||0)+1;if(testConsecWrong[wi]>1)testMultiWrong.add(wi);
+        if(testConsecWrong[wi]>=3&&wi>=0&&!(w.groups||[]).includes(MAFAN)){w.groups=[...(w.groups||[]),MAFAN];testNewMafan.push(wi);save();}
+        const insertAt=testRemaining.length>1?1+Math.floor(Math.random()*testRemaining.length):testRemaining.length;testRemaining.splice(insertAt,0,w);}
+      testFlipped=false;document.getElementById('test-btns').style.display='none';
+      card.style.transition='none';card.classList.remove('flipped');card.getBoundingClientRect();card.style.transition='';
+      if(!testRemaining.length)showTestComplete();else renderTestCard();
+    }, 260);
+  }, 120);
+}
+function renderTestCard(){if(!testRemaining.length)return;const w=testRemaining[0];populateCardFaces(w,'tcf-label','tcb-label','tcf-main','tcf-sub','tcb-main','tcb-sub','tcb-sub2',testMode);document.getElementById('test-status').textContent=`${testCorrect} correct · ${testRemaining.length} remaining`;}
+function showTestComplete(){
+  document.getElementById('test-area').style.display='none';document.getElementById('test-complete').style.display='block';
+  const wrongRate=testTotal>0?testWrong/testTotal:0;const perfect=testWrong===0;const good=!perfect&&wrongRate<=0.2;const somber=!perfect&&wrongRate>0.2;
+  document.getElementById('cel-message').textContent=perfect?'好极了！':good?'很好！':'Phew!!';
+  document.getElementById('cel-trophy').style.display=perfect?'block':'none';
+  const tiger=document.getElementById('cel-tiger'),dragon=document.getElementById('cel-dragon');
+  if(somber){tiger.style.animation='cel-droop 2s ease-in-out infinite alternate';dragon.style.animation='cel-droop 2s ease-in-out infinite alternate-reverse';tiger.style.opacity='0.45';dragon.style.opacity='0.45';}
+  else{tiger.style.animation='cel-bounce 0.6s ease-in-out infinite alternate';dragon.style.animation='cel-bounce 0.6s ease-in-out infinite alternate-reverse';tiger.style.opacity='1';dragon.style.opacity='1';}
+  let scoreHtml=`${testTotal} cards &nbsp;·&nbsp; <span style="color:var(--green)">${testCorrect} correct</span>`;
+  if(testWrong)scoreHtml+=` &nbsp;·&nbsp; <span style="color:var(--red)">${testWrong} wrong</span>`;else scoreHtml+=' &nbsp;·&nbsp; No mistakes! 🎉';
+  if(testMultiWrong.size>0)scoreHtml+=`<br><span style="color:var(--red);opacity:.8">${testMultiWrong.size} word${testMultiWrong.size>1?'s':''} missed multiple times</span>`;
+  if(testNewMafan.length>0)scoreHtml+=`<br><span style="color:var(--gold)">+${testNewMafan.length} added to 麻烦</span>`;
+  document.getElementById('cel-score').innerHTML=scoreHtml;
+  const cc=document.getElementById('cel-confetti');cc.innerHTML='';
+  if(somber){cc.style.opacity='.35';for(let s=0;s<2;s++)cc.appendChild(buildFirecrackerString(4,'#888'));return;}
+  cc.style.opacity='1';
+  const s1=buildFirecrackerString(8,['#c0392b','#e74c3c','#c0392b','#922b21','#e74c3c','#c0392b','#7b241c','#e74c3c']);
+  const s2=buildFirecrackerString(8,['#c0392b','#922b21','#e74c3c','#c0392b','#7b241c','#c0392b','#e74c3c','#922b21']);
+  cc.appendChild(s1);cc.appendChild(s2);
+  setTimeout(()=>popFirecrackers(s1,7),300);setTimeout(()=>popFirecrackers(s2,7),600);
+}
+function buildFirecrackerString(count,colors){
+  const wrap=document.createElement('div');wrap.style.cssText='position:relative;display:inline-flex;flex-direction:column;align-items:center';
+  const fuse=document.createElement('div');fuse.style.cssText='width:2px;height:14px;background:linear-gradient(180deg,#f5d020,#ff6b00,#8B4513);border-radius:1px;margin-bottom:2px';wrap.appendChild(fuse);
+  for(let i=0;i<count;i++){
+    const cord=document.createElement('div');cord.style.cssText='width:2px;height:7px;background:linear-gradient(180deg,#8B4513,#6B3410);border-radius:1px';wrap.appendChild(cord);
+    const cracker=document.createElement('div');cracker.className='fc-cracker';const col=Array.isArray(colors)?colors[i%colors.length]:colors;
+    cracker.style.background=`linear-gradient(180deg,${fcL(col)},${col},${fcD(col)})`;cracker.dataset.color=col;
+    cracker.innerHTML=`<div style="position:absolute;left:42%;top:0;bottom:0;width:3px;background:linear-gradient(180deg,transparent,rgba(255,215,0,.6),transparent)"></div>`;wrap.appendChild(cracker);
+  }
+  return wrap;
+}
+function fcL(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgb(${Math.min(255,r+60)},${Math.min(255,g+60)},${Math.min(255,b+60)})`;}
+function fcD(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgb(${Math.max(0,r-40)},${Math.max(0,g-40)},${Math.max(0,b-40)})`;}
+function popFirecrackers(strEl,idx){
+  const crackers=[...strEl.querySelectorAll('.fc-cracker')];if(idx<0)return;
+  const c=crackers[idx];c.classList.add('bang');
+  const burst=document.createElement('div');burst.className='fc-burst';burst.style.cssText=`position:absolute;left:${c.offsetLeft+c.offsetWidth/2-14}px;top:${c.offsetTop+c.offsetHeight/2-14}px;z-index:10`;strEl.appendChild(burst);requestAnimationFrame(()=>burst.classList.add('pop'));setTimeout(()=>burst.remove(),400);
+  [{dx:-22,dy:-8},{dx:22,dy:-8},{dx:-12,dy:-20},{dx:12,dy:-20},{dx:0,dy:-26}].forEach((d,i)=>{const smoke=document.createElement('div');smoke.className='fc-smoke';smoke.style.cssText=`position:absolute;left:${c.offsetLeft+10}px;top:${c.offsetTop+6}px;--dx:${d.dx}px;--dy:${d.dy}px;animation-delay:${i*.04}s`;strEl.appendChild(smoke);requestAnimationFrame(()=>smoke.classList.add('puff'));setTimeout(()=>smoke.remove(),900);});
+  setTimeout(()=>popFirecrackers(strEl,idx-1),280);
+  if(idx===crackers.length-1){const total=crackers.length;const savedColors=crackers.map(c=>c.dataset.color);setTimeout(()=>{const newStr=buildFirecrackerString(total,savedColors);strEl.replaceWith(newStr);setTimeout(()=>popFirecrackers(newStr,total-1),100);},total*280+1200);}
+}
+function resetTest(){document.getElementById('test-complete').style.display='none';document.getElementById('test-start-section').style.display='block';updateTestCountLabel();}
+function finishTest(){document.getElementById('test-complete').style.display='none';document.getElementById('test-area').style.display='none';document.getElementById('test-start-section').style.display='block';updateTestCountLabel();}
+
+// ── WORD DISPLAY ──
+let wdlHidden=new Set();
+let wdlBatchStart=0; // index into the ALL items array (pre-hide) where the current highlighted batch begins
+
+function populateWdlGroupSelect(){
+  const sel=document.getElementById('wdl-group-select');if(!sel)return;const cur=sel.value;
+  sel.innerHTML='<option value="All">All words</option>'+groups.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('')+'<option value="__duels__">Dueling Pairs</option>';
+  if(cur)sel.value=cur;
+}
+
+function resetWordDisplay(){wdlHidden.clear();wdlBatchStart=0;renderWordDisplay();}
+
+function getWdlItems(){
+  const sel=document.getElementById('wdl-group-select');const groupVal=sel?sel.value:'All';
+  let items=[];
+  if(groupVal==='__duels__'){
+    duelPairs.forEach((p,i)=>{
+      // Ensure both sides exist before pushing
+      if(p.a&&p.a.chinese)items.push({type:'duelA',data:p.a,key:'dA'+i});
+      if(p.b&&p.b.chinese)items.push({type:'duelB',data:p.b,key:'dB'+i});
+    });
+  } else {
+    const filtered=groupVal==='All'?words:words.filter(w=>(w.groups||[]).includes(groupVal));
+    filtered.forEach(w=>items.push({type:'word',data:w,key:'w'+words.indexOf(w)}));
+  }
+  return items;
+}
+
+function renderWordDisplay(){
+  const content=document.getElementById('wdl-content');content.innerHTML='';
+  const allItems=getWdlItems();
+
+  // Clamp batchStart to valid range
+  if(wdlBatchStart>=allItems.length)wdlBatchStart=0;
+
+  // The current batch is items[wdlBatchStart .. wdlBatchStart+9] (by original index)
+  const batchKeys=new Set(allItems.slice(wdlBatchStart, wdlBatchStart+10).map(i=>i.key));
+
+  // Check if all batch items are hidden → advance batch
+  const batchAllHidden=[...batchKeys].every(k=>wdlHidden.has(k));
+  if(batchAllHidden && batchKeys.size>0){
+    // Find the next non-hidden item after current batch
+    const nextStart=wdlBatchStart+10;
+    if(nextStart<allItems.length){
+      wdlBatchStart=nextStart;
+    } else {
+      // All items hidden or past end — keep batchStart, display empty
+    }
+    // Recompute batch keys after advance
+    const newBatchKeys=new Set(allItems.slice(wdlBatchStart, wdlBatchStart+10).map(i=>i.key));
+    batchKeys.clear();newBatchKeys.forEach(k=>batchKeys.add(k));
+  }
+
+  const visible=allItems.filter(item=>!wdlHidden.has(item.key));
+  if(!visible.length){
+    content.innerHTML='<div style="font-size:.78rem;color:var(--ink-light);opacity:.4;padding:.4rem 0">Nothing to display.</div>';
+    return;
+  }
+
+  // Count how many batch items are still visible (not yet hidden)
+  const batchRemaining=visible.filter(item=>batchKeys.has(item.key)).length;
+  const batchTotal=Math.min(10, allItems.slice(wdlBatchStart, wdlBatchStart+10).length);
+  // Highlight intensity: full at batchTotal remaining, fades as words are hidden
+  const highlightAlpha=batchTotal>0?(0.04 + 0.08*(batchRemaining/batchTotal)).toFixed(3):0;
+
+  const table=document.createElement('table');table.className='wdl-table';
+  table.innerHTML='<thead><tr><th>汉字</th><th>Pinyin</th><th>English</th><th></th></tr></thead>';
+  const tbody=document.createElement('tbody');
+
+  let pastBatch=false; // track when we've crossed into non-batch rows
+  visible.forEach((item,rowIdx)=>{
+    const d=item.data;const tr=document.createElement('tr');
+    const inBatch=batchKeys.has(item.key);
+    const isDuelA=item.type==='duelA';const isDuelB=item.type==='duelB';
+    let bg=inBatch?`rgba(184,134,11,${highlightAlpha})`:'';
+    let css=bg?`background:${bg};`:'';
+    if(isDuelA)css+=`border-left:3px solid rgba(184,134,11,.5)`;
+    if(isDuelB)css+=`border-left:3px solid rgba(184,134,11,.4);opacity:.75`;
+    if(css)tr.style.cssText=css;
+
+    const tdChar=document.createElement('td');tdChar.className='wdl-char';tdChar.textContent=d.chinese||'';
+    const tdPy=document.createElement('td');tdPy.className='wdl-py';tdPy.textContent=d.pinyin||'';
+    const tdEn=document.createElement('td');tdEn.className='wdl-en';tdEn.textContent=d.english||'';
+    const tdBtn=document.createElement('td');
+    const rmBtn=document.createElement('button');rmBtn.className='wdl-remove';rmBtn.textContent='✕';rmBtn.title='Hide from display';
+    rmBtn.addEventListener('click',()=>{wdlHidden.add(item.key);renderWordDisplay();});
+    tdBtn.appendChild(rmBtn);
+    tr.appendChild(tdChar);tr.appendChild(tdPy);tr.appendChild(tdEn);tr.appendChild(tdBtn);
+    tbody.appendChild(tr);
+
+    // Divider after the last batch row (transition from batch to non-batch)
+    if(inBatch && rowIdx<visible.length-1 && !batchKeys.has(visible[rowIdx+1].key)){
+      const divTr=document.createElement('tr');
+      const divTd=document.createElement('td');divTd.setAttribute('colspan','4');
+      divTd.style.cssText='padding:0;height:2px;background:linear-gradient(to right,rgba(184,134,11,.35),rgba(184,134,11,.12),transparent)';
+      divTr.appendChild(divTd);tbody.appendChild(divTr);
+    }
+  });
+
+  table.appendChild(tbody);content.appendChild(table);
+
+  // Progress note
+  const note=document.createElement('div');
+  note.style.cssText='font-size:.65rem;color:var(--ink-light);opacity:.35;margin-top:.5rem;text-align:right';
+  const hiddenCount=wdlHidden.size;
+  note.textContent=`${visible.length} shown · ${hiddenCount} hidden · batch ${Math.floor(wdlBatchStart/10)+1}`;
+  content.appendChild(note);
+}
+
+// ── RENDER WORD LIST ──
+let selectedIndices=new Set();
+function renderWordList(){
+  const fEl=document.getElementById('filter-group-vocab');if(!fEl)return;const fv=fEl.value;
+  fEl.innerHTML='<option value="">All</option>'+groups.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('')+'<option value="__none__">— No group</option>';
+  if(fv)fEl.value=fv;
+  const filterVal=fEl.value;let visible;
+  if(filterVal==='__none__')visible=words.filter(w=>!(w.groups||[]).length);else if(filterVal)visible=words.filter(w=>(w.groups||[]).includes(filterVal));else visible=words;
+  document.getElementById('word-count').textContent=visible.length;
+  const selBtn=document.getElementById('btn-select-all');selBtn.style.display=visible.length?'':'none';
+  const bar=document.getElementById('bulk-assign-bar');const selCount=[...selectedIndices].filter(i=>visible.includes(words[i])).length;
+  if(selCount>0){bar.classList.add('visible');document.getElementById('bulk-selected-count').textContent=`${selCount} selected`;const bSel=document.getElementById('bulk-assign-group');const bcur=bSel.value;bSel.innerHTML='<option value="">No group</option>'+groups.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('');if(bcur)bSel.value=bcur;}
+  else{bar.classList.remove('visible');selectedIndices.clear();}
+  const c=document.getElementById('word-items');c.innerHTML='';
+  visible.forEach(w=>{
+    const ri=words.indexOf(w);const grpLabel=(w.groups||[]).join(', ')||'—';const isSel=selectedIndices.has(ri);
+    const el=document.createElement('div');el.className='word-item selectable'+(isSel?' selected':'');
+    el.innerHTML=`<div class="wi-check">${isSel?'✓':''}</div><span class="wi-char">${esc(w.chinese)}</span><span class="wi-pinyin">${esc(w.pinyin||'—')}</span><span class="wi-en">${esc(w.english)}</span><span class="wi-group" title="${esc(grpLabel)}">${esc(grpLabel)}</span><button class="btn-edit">✎</button><button class="btn-del">✕</button>`;
+    el.querySelector('.btn-edit').addEventListener('click',e=>{e.stopPropagation();openEditModal(ri);});el.querySelector('.btn-del').addEventListener('click',e=>{e.stopPropagation();deleteWord(ri);});
+    el.addEventListener('click',e=>{if(e.target.classList.contains('btn-edit')||e.target.classList.contains('btn-del'))return;if(selectedIndices.has(ri))selectedIndices.delete(ri);else selectedIndices.add(ri);renderWordList();});
+    c.appendChild(el);
+  });
+  const addG=document.getElementById('inp-group');const cur=addG.value;addG.innerHTML='<option value="">No group</option>'+groups.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('');if(cur)addG.value=cur;
+  const bigEl=document.getElementById('bulk-import-group');const bigCur=bigEl.value;bigEl.innerHTML='<option value="">Use group from text</option>'+groups.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('');if(bigCur)bigEl.value=bigCur;
+}
+function toggleSelectAll(){const fEl=document.getElementById('filter-group-vocab');const fv=fEl.value;let visible;if(fv==='__none__')visible=words.filter(w=>!(w.groups||[]).length);else if(fv)visible=words.filter(w=>(w.groups||[]).includes(fv));else visible=words;const allSelected=visible.every(w=>selectedIndices.has(words.indexOf(w)));if(allSelected)visible.forEach(w=>selectedIndices.delete(words.indexOf(w)));else visible.forEach(w=>selectedIndices.add(words.indexOf(w)));renderWordList();}
+function clearSelection(){selectedIndices.clear();renderWordList();}
+function bulkAssign(remove=false){const g=document.getElementById('bulk-assign-group').value;if(!g){alert('Please select a group first.');return;}selectedIndices.forEach(i=>{if(!words[i])return;const gs=words[i].groups||[];if(remove)words[i].groups=gs.filter(x=>x!==g);else if(!gs.includes(g))words[i].groups=[...gs,g];});selectedIndices.clear();save();renderAll();}
+
+// ── RENDER GROUP PANEL ──
+function renderGroupPanel(){
+  const c=document.getElementById('group-items');if(!c)return;c.innerHTML='';
+  if(!groups.length){c.innerHTML='<div style="font-size:.8rem;opacity:.38;padding:.4rem 0">No groups yet.</div>';return;}
+  groups.forEach(g=>{
+    const count=words.filter(w=>(w.groups||[]).includes(g)).length;
+    const el=document.createElement('div');el.className='group-item';
+    const info=document.createElement('div');const nameSpan=document.createElement('span');nameSpan.className='gi-name';nameSpan.textContent=g;const countSpan=document.createElement('span');countSpan.className='gi-count';countSpan.textContent=`${count}/${words.length} words`;info.appendChild(nameSpan);info.appendChild(countSpan);
+    const actions=document.createElement('div');actions.className='gi-actions';const editBtn=document.createElement('button');editBtn.className='btn-sm';editBtn.textContent='✎ Edit';editBtn.addEventListener('click',()=>openGroupEditor(g));const delBtn=document.createElement('button');delBtn.className='btn-sm danger';delBtn.textContent='Delete';delBtn.addEventListener('click',()=>deleteGroup(g));actions.appendChild(editBtn);actions.appendChild(delBtn);
+    el.appendChild(info);el.appendChild(actions);c.appendChild(el);
+  });
+}
+
+// ── PINYIN GENERATOR ──
+const PY_SYLLABLES=['ba','bai','ban','bang','bao','bei','ben','beng','bi','bian','biao','bie','bin','bing','bo','bu','pa','pai','pan','pang','pao','pei','pen','peng','pi','pian','piao','pie','pin','ping','po','pou','pu','ma','mai','man','mang','mao','me','mei','men','meng','mi','mian','miao','mie','min','ming','miu','mo','mou','mu','fa','fan','fang','fei','fen','feng','fo','fou','fu','da','dai','dan','dang','dao','de','dei','den','deng','di','dian','diao','die','ding','diu','dong','dou','du','duan','dui','dun','duo','ta','tai','tan','tang','tao','te','teng','ti','tian','tiao','tie','ting','tong','tou','tu','tuan','tui','tun','tuo','na','nai','nan','nang','nao','ne','nei','nen','neng','ni','nian','niang','niao','nie','nin','ning','niu','nong','nou','nu','nuan','nuo','nü','nüe','la','lai','lan','lang','lao','le','lei','leng','li','lia','lian','liang','liao','lie','lin','ling','liu','lo','long','lou','lu','luan','lun','luo','lü','lüe','ga','gai','gan','gang','gao','ge','gei','gen','geng','gong','gou','gu','gua','guai','guan','guang','gui','gun','guo','ka','kai','kan','kang','kao','ke','ken','keng','kong','kou','ku','kua','kuai','kuan','kuang','kui','kun','kuo','ha','hai','han','hang','hao','he','hei','hen','heng','hong','hou','hu','hua','huai','huan','huang','hui','hun','huo','ji','jia','jian','jiang','jiao','jie','jin','jing','jiong','jiu','ju','juan','jue','jun','qi','qia','qian','qiang','qiao','qie','qin','qing','qiong','qiu','qu','quan','que','qun','xi','xia','xian','xiang','xiao','xie','xin','xing','xiong','xiu','xu','xuan','xue','xun','zha','zhai','zhan','zhang','zhao','zhe','zhei','zhen','zheng','zhi','zhong','zhou','zhu','zhua','zhuai','zhuan','zhuang','zhui','zhun','zhuo','cha','chai','chan','chang','chao','che','chen','cheng','chi','chong','chou','chu','chua','chuai','chuan','chuang','chui','chun','chuo','sha','shai','shan','shang','shao','she','shei','shen','sheng','shi','shou','shu','shua','shuai','shuan','shuang','shui','shun','shuo','ran','rang','rao','re','ren','reng','ri','rong','rou','ru','ruan','rui','run','ruo','za','zai','zan','zang','zao','ze','zei','zen','zeng','zi','zong','zou','zu','zuan','zui','zun','zuo','ca','cai','can','cang','cao','ce','cen','ceng','ci','cong','cou','cu','cuan','cui','cun','cuo','sa','sai','san','sang','sao','se','sen','seng','si','song','sou','su','suan','sui','sun','suo','ya','yan','yang','yao','ye','yi','yin','ying','yong','you','yu','yuan','yue','yun','wa','wai','wan','wang','wei','wen','weng','wo','wu','a','ai','an','ang','ao','e','ei','en','eng','er','o','ou'];
+const TONE_MARKS={'a':['ā','á','ǎ','à'],'e':['ē','é','ě','è'],'i':['ī','í','ǐ','ì'],'o':['ō','ó','ǒ','ò'],'u':['ū','ú','ǔ','ù'],'ü':['ǖ','ǘ','ǚ','ǜ'],'v':['ǖ','ǘ','ǚ','ǜ']};
+function applyTone(syllable,tone){let s=syllable.replace('ü','v');if(/a/.test(s))return s.replace('a',TONE_MARKS['a'][tone-1]).replace('v','ü');if(/e/.test(s))return s.replace('e',TONE_MARKS['e'][tone-1]).replace('v','ü');if(s.includes('ou'))return s.replace('o',TONE_MARKS['o'][tone-1]).replace('v','ü');for(let i=s.length-1;i>=0;i--){const ch=s[i];if(TONE_MARKS[ch])return s.slice(0,i)+TONE_MARKS[ch][tone-1]+s.slice(i+1).replace('v','ü');}return syllable;}
+let pyTone='random',pySyllableCount=1,pyInterval=null,pyRunning=false;
+const pySpeeds=[null,...Array.from({length:16},(_,i)=>Math.round((8-(i*.5))*1000))];
+const pySpeedLabels=[null,...Array.from({length:16},(_,i)=>{const s=8-(i*.5);return`${s} sec`;})];
+function setPySyllables(n){pySyllableCount=n;document.getElementById('py-syl-1').classList.toggle('active',n===1);document.getElementById('py-syl-2').classList.toggle('active',n===2);if(pyRunning)nextPinyin();}
+function setPyTone(t){pyTone=t;['r','1','2','3','4'].forEach(k=>{const el=document.getElementById('py-tone-'+k);if(el)el.classList.toggle('active',String(t)===(k==='r'?'random':k));});if(pyRunning)nextPinyin();}
+function updatePySpeedDesc(){const v=parseInt(document.getElementById('py-speed').value);document.getElementById('py-speed-desc').textContent=pySpeedLabels[v];}
+function genOneSyllable(){const syl=PY_SYLLABLES[Math.floor(Math.random()*PY_SYLLABLES.length)];const tone=pyTone==='random'?Math.ceil(Math.random()*4):pyTone;return{toned:applyTone(syl,tone)};}
+function nextPinyin(){
+  const disp=document.getElementById('py-display');disp.style.opacity='0';
+  setTimeout(()=>{disp.textContent=pySyllableCount===1?genOneSyllable().toned:`${genOneSyllable().toned}  ${genOneSyllable().toned}`;disp.style.opacity='1';},100);
+}
+function startPinyin(){pyRunning=true;document.getElementById('py-btn-start').style.display='none';document.getElementById('py-btn-stop').style.display='';nextPinyin();const v=parseInt(document.getElementById('py-speed').value);pyInterval=setInterval(nextPinyin,pySpeeds[v]);}
+function stopPinyin(){pyRunning=false;clearInterval(pyInterval);pyInterval=null;const s=document.getElementById('py-btn-start');const st=document.getElementById('py-btn-stop');if(s)s.style.display='';if(st)st.style.display='none';}
+document.getElementById('py-speed').addEventListener('input',()=>{updatePySpeedDesc();if(pyRunning){stopPinyin();startPinyin();}});
+updatePySpeedDesc();
+
+// ── EDIT GROUP LIST ──
+function populateEglSelect(){
+  const sel=document.getElementById('egl-group-select');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— pick a group —</option>'+
+    groups.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('')+
+    '<option value="__duels__">Dueling Pairs</option>';
+  if(cur)sel.value=cur;
+}
+
+function renderEditGroupList(){
+  const sel=document.getElementById('egl-group-select');
+  const content=document.getElementById('egl-content');
+  if(!sel||!content)return;
+  const groupVal=sel.value;
+  content.innerHTML='';
+
+  if(!groupVal){
+    content.innerHTML='<div style="font-size:.78rem;color:var(--ink-light);opacity:.38;padding:.2rem 0">Select a group above to edit it.</div>';
+    return;
+  }
+
+  if(groupVal==='__duels__'){
+    // Show duel pairs — one ✕ per pair, deletes both characters from library
+    if(!duelPairs.length){
+      content.innerHTML='<div style="font-size:.78rem;color:var(--ink-light);opacity:.38;padding:.2rem 0">No dueling pairs yet.</div>';
+      return;
+    }
+    const table=document.createElement('table');
+    table.className='wdl-table';
+    table.innerHTML='<thead><tr><th colspan="2">Pair</th><th></th></tr></thead>';
+    const tbody=document.createElement('tbody');
+    duelPairs.forEach((p,i)=>{
+      const tr=document.createElement('tr');
+      // A and B stacked in first cell, no horizontal line between them
+      const tdPair=document.createElement('td');
+      tdPair.setAttribute('colspan','2');
+      tdPair.style.paddingBottom='.5rem';
+      // A row
+      const rowA=document.createElement('div');
+      rowA.style.cssText='display:flex;align-items:baseline;gap:.45rem';
+      const cA=document.createElement('span');cA.className='wdl-char';cA.textContent=p.a.chinese;
+      const pyA=document.createElement('span');pyA.className='wdl-py';pyA.textContent=p.a.pinyin||'';
+      const enA=document.createElement('span');enA.className='wdl-en';enA.textContent=p.a.english||'';
+      rowA.appendChild(cA);rowA.appendChild(pyA);rowA.appendChild(enA);
+      // B row — directly under A, no divider
+      const rowB=document.createElement('div');
+      rowB.style.cssText='display:flex;align-items:baseline;gap:.45rem;margin-top:.1rem';
+      const cB=document.createElement('span');cB.className='wdl-char';cB.textContent=p.b.chinese;
+      const pyB=document.createElement('span');pyB.className='wdl-py';pyB.textContent=p.b.pinyin||'';
+      const enB=document.createElement('span');enB.className='wdl-en';enB.textContent=p.b.english||'';
+      rowB.appendChild(cB);rowB.appendChild(pyB);rowB.appendChild(enB);
+      tdPair.appendChild(rowA);tdPair.appendChild(rowB);
+      // Single ✕ button hides/deletes both
+      const tdBtn=document.createElement('td');tdBtn.style.verticalAlign='middle';
+      const btn=document.createElement('button');btn.className='wdl-remove';btn.textContent='✕';
+      btn.title='Delete this pair';
+      btn.addEventListener('click',()=>{
+        if(confirm(`Delete pair ${p.a.chinese} / ${p.b.chinese}?\nThis removes both characters from the library.`)){
+          deleteDuelPair(i);
+          renderEditGroupList();renderDuelPairListVocab();
+        }
+      });
+      tdBtn.appendChild(btn);
+      tr.appendChild(tdPair);tr.appendChild(tdBtn);
+      tbody.appendChild(tr);
+      // Divider between pairs only
+      if(i<duelPairs.length-1){
+        const trDiv=document.createElement('tr');
+        const tdDiv=document.createElement('td');tdDiv.setAttribute('colspan','3');
+        tdDiv.style.cssText='padding:0;height:1px;background:linear-gradient(to right,rgba(184,134,11,.15),transparent)';
+        trDiv.appendChild(tdDiv);tbody.appendChild(trDiv);
+      }
+    });
+    table.appendChild(tbody);content.appendChild(table);
+    return;
+  }
+
+  // Regular group — show words, ✕ removes from group (keeps in library)
+  const groupWords=words.filter(w=>(w.groups||[]).includes(groupVal));
+  if(!groupWords.length){
+    content.innerHTML='<div style="font-size:.78rem;color:var(--ink-light);opacity:.38;padding:.2rem 0">No words in this group.</div>';
+    return;
+  }
+  const note=document.createElement('div');
+  note.style.cssText='font-size:.68rem;color:var(--ink-light);opacity:.45;margin-bottom:.5rem';
+  note.textContent='✕ removes word from this group but keeps it in your library.';
+  content.appendChild(note);
+
+  const table=document.createElement('table');
+  table.className='wdl-table';
+  table.innerHTML='<thead><tr><th>汉字</th><th>Pinyin</th><th>English</th><th></th></tr></thead>';
+  const tbody=document.createElement('tbody');
+  groupWords.forEach(w=>{
+    const ri=words.indexOf(w);
+    const tr=document.createElement('tr');
+    const tdChar=document.createElement('td');tdChar.className='wdl-char';tdChar.textContent=w.chinese;
+    const tdPy=document.createElement('td');tdPy.className='wdl-py';tdPy.textContent=w.pinyin||'';
+    const tdEn=document.createElement('td');tdEn.className='wdl-en';tdEn.textContent=w.english;
+    const tdBtn=document.createElement('td');
+    const btn=document.createElement('button');btn.className='wdl-remove';btn.textContent='✕';
+    btn.title='Remove from group';
+    btn.addEventListener('click',()=>{
+      if(ri>=0){
+        words[ri].groups=(words[ri].groups||[]).filter(g=>g!==groupVal);
+        save();renderEditGroupList();renderWordList();renderGroupPanel();
+      }
+    });
+    tdBtn.appendChild(btn);
+    tr.appendChild(tdChar);tr.appendChild(tdPy);tr.appendChild(tdEn);tr.appendChild(tdBtn);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);content.appendChild(table);
+  const countNote=document.createElement('div');
+  countNote.style.cssText='font-size:.65rem;color:var(--ink-light);opacity:.32;margin-top:.4rem;text-align:right';
+  countNote.textContent=`${groupWords.length} words`;
+  content.appendChild(countNote);
+}
+
+// ── CHUNK MODE ──
+let chunkSize=8, chunkDir='hanzi', chunkPool=[], chunkOffset=0, chunkCards=[];
+
+function setChunkSize(n){
+  chunkSize=n;
+  [6,7,8,9,10].forEach(k=>document.getElementById('chunk-size-'+k).classList.toggle('active',k===n));
+  loadChunk();
+}
+
+function setChunkDir(d){
+  chunkDir=d;
+  ['hz','en','py'].forEach(k=>document.getElementById('chunk-dir-'+k).classList.remove('active'));
+  document.getElementById('chunk-dir-'+{hanzi:'hz',english:'en',pinyin:'py'}[d]).classList.add('active');
+  renderChunkGrid();
+}
+
+function initChunk(){
+  chunkPool=[...deck];
+  for(let i=chunkPool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[chunkPool[i],chunkPool[j]]=[chunkPool[j],chunkPool[i]];}
+  chunkOffset=0;
+  loadChunk();
+}
+
+function loadChunk(){
+  if(!chunkPool.length)return;
+  if(chunkOffset>=chunkPool.length)chunkOffset=0;
+  chunkCards=chunkPool.slice(chunkOffset,chunkOffset+Math.min(chunkSize,chunkPool.length));
+  updateChunkProg();
+  renderChunkGrid();
+}
+
+function updateChunkProg(){
+  const total=chunkPool.length;
+  const end=Math.min(chunkOffset+chunkCards.length,total);
+  document.getElementById('chunk-prog').textContent=`Words ${chunkOffset+1}–${end} of ${total}`;
+}
+
+function renderChunkGrid(){
+  const grid=document.getElementById('chunk-grid');
+  grid.innerHTML='';
+  chunkCards.forEach((w,i)=>{
+    const card=document.createElement('div');
+    card.className='chunk-card';
+    card.dataset.idx=i;
+
+    // Front face
+    const front=document.createElement('div');front.className='chunk-front';
+    if(chunkDir==='hanzi'){
+      const zh=document.createElement('div');zh.className='chunk-zh';zh.textContent=w.chinese;front.appendChild(zh);
+    } else if(chunkDir==='pinyin'){
+      const py=document.createElement('div');py.className='chunk-zh';py.style.cssText='font-size:1.2rem;font-family:Noto Sans,sans-serif;font-style:italic;color:var(--red);letter-spacing:.03em';py.textContent=w.pinyin||'—';front.appendChild(py);
+    } else {
+      // English front
+      const en=document.createElement('div');en.className='chunk-en-front';en.textContent=w.english;front.appendChild(en);
+    }
+    const hint=document.createElement('div');hint.className='chunk-tap-hint';hint.textContent='tap to flip';front.appendChild(hint);
+
+    // Back face
+    const back=document.createElement('div');back.className='chunk-back';
+    if(chunkDir==='hanzi'){
+      // Show pinyin + English
+      const py=document.createElement('div');py.className='chunk-bk-py';py.textContent=w.pinyin||'—';back.appendChild(py);
+      const en=document.createElement('div');en.className='chunk-en';en.textContent=w.english;back.appendChild(en);
+    } else if(chunkDir==='pinyin'){
+      // Show Chinese + English
+      const zh=document.createElement('div');zh.className='chunk-bk-zh';zh.textContent=w.chinese;back.appendChild(zh);
+      const en=document.createElement('div');en.className='chunk-en';en.textContent=w.english;back.appendChild(en);
+    } else {
+      // English→Chinese: show Chinese + pinyin
+      const zh=document.createElement('div');zh.className='chunk-bk-zh';zh.textContent=w.chinese;back.appendChild(zh);
+      const py=document.createElement('div');py.className='chunk-bk-py';py.textContent=w.pinyin||'—';back.appendChild(py);
+    }
+    const hint2=document.createElement('div');hint2.className='chunk-tap-hint';hint2.textContent='tap to flip back';back.appendChild(hint2);
+
+    card.appendChild(front);card.appendChild(back);
+    // Simple toggle on every tap
+    card.addEventListener('click',()=>card.classList.toggle('flipped'));
+    grid.appendChild(card);
+  });
+}
+
+function shuffleChunk(){
+  for(let i=chunkCards.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[chunkCards[i],chunkCards[j]]=[chunkCards[j],chunkCards[i]];}
+  renderChunkGrid();
+}
+
+function nextChunk(){
+  chunkOffset=(chunkOffset+chunkCards.length)%chunkPool.length;
+  loadChunk();
+}
+
+
+function renderAll(){
+  buildDeck();renderDeckSelects();renderCard();
+  renderWordList();renderGroupPanel();
+  renderDuelPairList();renderDuelPairListVocab();
+  populateEglSelect();renderEditGroupList();
+}
+
+// ── TOUCH SWIPE (study) ──
+let tx=0,ty=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;
+  if(!document.getElementById('page-study').classList.contains('active'))return;
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5)navigate(dx<0?1:-1);
+},{passive:true});
+
+// ── KEYBOARD ──
+document.addEventListener('keydown',e=>{
+  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;
+  if(!document.getElementById('page-study').classList.contains('active'))return;
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);
+  if(e.key===' '){e.preventDefault();flipCard();}
+});
+document.getElementById('inp-en').addEventListener('keydown',e=>{if(e.key==='Enter')addWord();});
+document.getElementById('inp-new-group').addEventListener('keydown',e=>{if(e.key==='Enter')createGroup();});
+
+// ── PWA ──
+if('serviceWorker' in navigator){
+  const sw=`const C='hzc-v26';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll([self.location.href]))));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k))))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))))`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+
+renderAll();
+</script>
+
+</body>
+</html>
